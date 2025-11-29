@@ -1,0 +1,26 @@
+import test from 'node:test';
+import assert from 'node:assert';
+
+import {filterLogs} from 'utils/logs';
+
+test('filterLogs filters by level', () => {
+  const logs = [
+    {level: 'info', message: 'a'},
+    {level: 'error', message: 'b'}
+  ];
+
+  const result = filterLogs({logs, level: 'error'});
+  assert.strictEqual(result.length, 1);
+  assert.strictEqual(result[0].message, 'b');
+});
+
+test('filterLogs filters by search text', () => {
+  const logs = [
+    {level: 'info', message: 'hello world', scope: 'bg'},
+    {level: 'info', message: 'other', scope: 'content'}
+  ];
+
+  const result = filterLogs({logs, search: 'world'});
+  assert.strictEqual(result.length, 1);
+  assert.strictEqual(result[0].message, 'hello world');
+});
