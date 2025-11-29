@@ -21,7 +21,13 @@
     "webRequestBlocking",
     "webNavigation",
     "nativeMessaging",
-    "<all_urls>"
+    "https://*.google.com/*",
+    "https://*.recaptcha.net/*",
+    "https://api.wit.ai/*",
+    "https://speech.googleapis.com/*",
+    "https://*.speech-to-text.watson.cloud.ibm.com/*",
+    "https://iam.cloud.ibm.com/*",
+    "https://*.stt.speech.microsoft.com/*"
   ],
 
   "content_security_policy": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src * data:; connect-src *; object-src 'none'; frame-ancestors http://127.0.0.1:*;",
