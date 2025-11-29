@@ -8,6 +8,10 @@ const {chromium} = require('playwright-chromium');
 const {spawnSync} = require('node:child_process');
 
 async function main() {
+  const targets = [
+    'https://www.google.com/recaptcha/api2/demo',
+    'https://www.recaptcha.net/recaptcha/api2/demo'
+  ];
   const extPath =
     process.env.BUSTER_EXT_PATH ||
     path.join(__dirname, '..', '..', 'dist', 'chrome');
@@ -32,22 +36,34 @@ async function main() {
     }
   }
 
-  const context = await chromium.launchPersistentContext(
-    profilePath,
-    {
-      headless: false,
-      args: [
-        `--disable-extensions-except=${extPath}`,
-        `--load-extension=${extPath}`,
-        '--disable-blink-features=AutomationControlled'
-      ]
-    }
-  );
+  const context = await chromium.launchPersistentContext(profilePath, {
+    headless: false,
+    args: [
+      `--disable-extensions-except=${extPath}`,
+      `--load-extension=${extPath}`,
+      '--disable-blink-features=AutomationControlled',
+      '--disable-features=IsolateOrigins,site-per-process',
+      '--disable-dev-shm-usage'
+    ],
+    userAgent:
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+  });
 
   const page = await context.newPage();
-  await page.goto('https://www.google.com/recaptcha/api2/demo', {
-    waitUntil: 'domcontentloaded'
-  });
+  let navigated = false;
+  for (const url of targets) {
+    try {
+      await page.goto(url, {waitUntil: 'domcontentloaded', timeout: 30000});
+      navigated = true;
+      break;
+    } catch (err) {
+      console.warn('Navigation failed to', url, err.message);
+    }
+  }
+  if (!navigated) {
+    console.error('Could not load any target demo URL.');
+    return;
+  }
 
   // Click the checkbox inside the anchor iframe.
   let anchorFrame = null;
@@ -92,7 +108,7 @@ async function main() {
 
   const solverButton = await challengeFrame
     .waitForSelector('#solver-button', {
-      timeout: 20000
+      timeout: 30000
     })
     .catch(err => {
       console.error('Solver button not found:', err.message);

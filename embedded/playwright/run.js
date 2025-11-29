@@ -20,7 +20,10 @@ async function main() {
       headless: false,
       args: [
         `--disable-extensions-except=${EXT_PATH}`,
-        `--load-extension=${EXT_PATH}`
+        `--load-extension=${EXT_PATH}`,
+        '--disable-blink-features=AutomationControlled',
+        '--disable-features=IsolateOrigins,site-per-process',
+        '--disable-dev-shm-usage'
       ]
     }
   );
