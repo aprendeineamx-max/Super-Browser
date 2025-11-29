@@ -3,6 +3,7 @@
 
 const path = require('node:path');
 const {chromium} = require('playwright-chromium');
+const {spawnSync} = require('node:child_process');
 
 async function main() {
   const extPath =
@@ -11,6 +12,23 @@ async function main() {
   const profilePath =
     process.env.BUSTER_PROFILE_PATH ||
     path.join(__dirname, 'profiles', 'verify');
+
+  // Ensure manifest exists; if not, build dist/chrome.
+  const manifestPath = path.join(extPath, 'manifest.json');
+  try {
+    require('fs').accessSync(manifestPath);
+  } catch (err) {
+    console.log('manifest.json not found, building dist/chrome...');
+    const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    const result = spawnSync(npmCmd, ['run', 'build:prod:chrome'], {
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..')
+    });
+    if (result.status !== 0) {
+      console.error('Build failed, cannot continue.');
+      process.exit(result.status || 1);
+    }
+  }
 
   const context = await chromium.launchPersistentContext(
     profilePath,
