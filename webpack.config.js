@@ -88,6 +88,10 @@ module.exports = {
   },
   optimization: {
     splitChunks: {
+      chunks: 'all',
+      maxInitialRequests: 20,
+      minSize: 20000,
+      automaticNameDelimiter: '-',
       cacheGroups: {
         default: false,
         commonsUi: {
