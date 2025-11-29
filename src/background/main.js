@@ -51,6 +51,23 @@ import {registerDriver, transcribeWithFallback} from './stt/registry';
 let nativePort;
 const logger = createLogger('background', {level: logLevel});
 
+async function syncLoggerConfig() {
+  try {
+    const {logLevel: storedLevel, logSampleRate} = await storage.get([
+      'logLevel',
+      'logSampleRate'
+    ]);
+    if (storedLevel) {
+      logger.setLevel(storedLevel);
+    }
+    if (logSampleRate !== undefined) {
+      logger.setSampleRate(logSampleRate);
+    }
+  } catch (err) {
+    logger.debug('logger config sync failed', {error: err?.message});
+  }
+}
+
 function getFrameClientPos(index) {
   let currentIndex = -1;
   if (window !== window.top) {
@@ -1090,6 +1107,7 @@ async function onClientAppInstall() {
 
 async function onOptionChange() {
   await setChallengeLocale();
+  await syncLoggerConfig();
 }
 
 async function onActionButtonClick(tab) {
@@ -1173,7 +1191,7 @@ function init() {
   addInstallListener();
   addStartupListener();
 
-  setup();
+  setup().then(syncLoggerConfig);
 }
 
 init();

@@ -143,6 +143,82 @@
       </div>
     </div>
 
+    <div class="section">
+      <div class="section-title" v-once>
+        {{ getText('optionSectionTitle_sttAdvanced') }}
+      </div>
+      <div class="option-wrap">
+        <div class="option text-field">
+          <vn-text-field
+            :label="getText('optionTitle_speechServiceOrder')"
+            :hint="getText('optionDescription_speechServiceOrder')"
+            persistent-hint
+            v-model.trim="speechServiceOrderInput"
+          >
+          </vn-text-field>
+        </div>
+
+        <div
+          class="option text-field"
+          v-if="options.speechService === 'customHttp'"
+        >
+          <vn-text-field
+            :label="getText('optionTitle_customSpeechApiUrl')"
+            v-model.trim="options.customSpeechApiUrl"
+          >
+          </vn-text-field>
+        </div>
+
+        <div
+          class="option select"
+          v-if="options.speechService === 'customHttp'"
+        >
+          <vn-select
+            :label="getText('optionTitle_customSpeechApiMethod')"
+            :items="customHttpMethods"
+            item-title="title"
+            item-value="value"
+            v-model="options.customSpeechApiMethod"
+            transition="scale-transition"
+          >
+          </vn-select>
+        </div>
+
+        <div
+          class="option text-field"
+          v-if="options.speechService === 'customHttp'"
+        >
+          <vn-text-field
+            :label="getText('optionTitle_customSpeechApiHeaders')"
+            v-model.trim="options.customSpeechApiHeaders"
+          >
+          </vn-text-field>
+        </div>
+
+        <div
+          class="option text-field"
+          v-if="options.speechService === 'customHttp'"
+        >
+          <vn-text-field
+            :label="getText('optionTitle_customSpeechApiBodyTemplate')"
+            v-model.trim="options.customSpeechApiBodyTemplate"
+          >
+          </vn-text-field>
+        </div>
+
+        <div
+          class="option text-field"
+          v-if="options.speechService === 'customHttp'"
+        >
+          <vn-text-field
+            :label="getText('optionTitle_customSpeechApiResponsePath')"
+            v-model.trim="options.customSpeechApiResponsePath"
+          >
+          </vn-text-field>
+        </div>
+      </div>
+    </div>
+
     <div class="section section-client">
       <div class="section-title" v-once>
         {{ getText('optionSectionTitle_client') }}
@@ -214,6 +290,32 @@
             rel="noreferrer"
             :href="clientAppDownloadUrl"
           ></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title" v-once>
+        {{ getText('optionSectionTitle_logging') }}
+      </div>
+      <div class="option-wrap">
+        <div class="option select">
+          <vn-select
+            :label="getText('optionTitle_logLevel')"
+            :items="listItems.logLevel"
+            v-model="options.logLevel"
+            transition="scale-transition"
+          >
+          </vn-select>
+        </div>
+        <div class="option text-field">
+          <vn-text-field
+            :label="getText('optionTitle_logSampleRate')"
+            :hint="getText('optionDescription_logSampleRate')"
+            persistent-hint
+            v-model.number="options.logSampleRate"
+          >
+          </vn-text-field>
         </div>
       </div>
     </div>
@@ -302,7 +404,8 @@ export default {
               'googleSpeechApi',
               'witSpeechApi',
               'ibmSpeechApi',
-              'microsoftSpeechApi'
+              'microsoftSpeechApi',
+              'customHttp'
             ]
           },
           {scope: 'optionValue_speechService'}
@@ -324,13 +427,25 @@ export default {
         ...getListItems(
           {appTheme: ['auto', 'light', 'dark']},
           {scope: 'optionValue_appTheme'}
-        )
+        ),
+        logLevel: [
+          {value: 'debug', title: 'debug'},
+          {value: 'info', title: 'info'},
+          {value: 'warn', title: 'warn'},
+          {value: 'error', title: 'error'}
+        ]
       },
 
       enableContributions,
 
       witSpeechApiLang: null,
       witSpeechApis: [],
+      customHttpMethods: [
+        {value: 'POST', title: 'POST'},
+        {value: 'PUT', title: 'PUT'},
+        {value: 'PATCH', title: 'PATCH'},
+        {value: 'GET', title: 'GET'}
+      ],
 
       clientAppVerified: false,
       clientAppInstalled: false,
@@ -344,6 +459,14 @@ export default {
         ibmSpeechApiKey: '',
         microsoftSpeechApiLoc: '',
         microsoftSpeechApiKey: '',
+        speechServiceOrder: [],
+        customSpeechApiUrl: '',
+        customSpeechApiMethod: 'POST',
+        customSpeechApiHeaders: '',
+        customSpeechApiBodyTemplate: '',
+        customSpeechApiResponsePath: '',
+        logLevel: 'info',
+        logSampleRate: 1,
         witSpeechApiKeys: {},
         loadEnglishChallenge: false,
         tryEnglishSpeechModel: false,
@@ -356,6 +479,22 @@ export default {
     };
   },
 
+  computed: {
+    speechServiceOrderInput: {
+      get() {
+        return Array.isArray(this.options.speechServiceOrder)
+          ? this.options.speechServiceOrder.join(',')
+          : '';
+      },
+      set(value) {
+        const next = value
+          ? value.split(',').map(item => item.trim()).filter(Boolean)
+          : [];
+        this.options.speechServiceOrder = next;
+      }
+    }
+  },
+
   methods: {
     getText,
 
@@ -365,7 +504,10 @@ export default {
       const options = await storage.get(optionKeys);
 
       for (const option of Object.keys(this.options)) {
-        this.options[option] = options[option];
+        const defaultValue = this.options[option];
+        const storedValue =
+          options[option] === undefined ? defaultValue : options[option];
+        this.options[option] = storedValue;
 
         this.$watch(
           `options.${option}`,

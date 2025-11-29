@@ -6,10 +6,11 @@ const levels = {
 };
 
 function createLogger(scope = 'app', {level = 'info', sampleRate = 1} = {}) {
-  const minLevel = levels[level] || levels.info;
+  let minLevel = levels[level] || levels.info;
+  let rate = sampleRate;
 
   function shouldSample() {
-    return sampleRate >= 1 || Math.random() < sampleRate;
+    return rate >= 1 || Math.random() < rate;
   }
 
   function emit(lvl, message, context = {}) {
@@ -32,12 +33,27 @@ function createLogger(scope = 'app', {level = 'info', sampleRate = 1} = {}) {
     return payload;
   }
 
+  function setLevel(newLevel) {
+    if (levels[newLevel]) {
+      minLevel = levels[newLevel];
+    }
+  }
+
+  function setSampleRate(newRate) {
+    const value = Number(newRate);
+    if (!Number.isNaN(value) && value >= 0 && value <= 1) {
+      rate = value;
+    }
+  }
+
   return {
     debug: (msg, ctx) => emit('debug', msg, ctx),
     info: (msg, ctx) => emit('info', msg, ctx),
     warn: (msg, ctx) => emit('warn', msg, ctx),
-    error: (msg, ctx) => emit('error', msg, ctx)
+    error: (msg, ctx) => emit('error', msg, ctx),
+    setLevel,
+    setSampleRate
   };
 }
 
-export {createLogger};
+export {createLogger, levels};

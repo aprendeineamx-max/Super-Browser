@@ -10,6 +10,10 @@ function getDriver(id) {
   return drivers.get(id);
 }
 
+function clearDrivers() {
+  drivers.clear();
+}
+
 async function transcribeWithFallback({
   order = [],
   lang,
@@ -76,4 +80,4 @@ async function transcribeWithFallback({
   }
 }
 
-export {registerDriver, transcribeWithFallback};
+export {registerDriver, transcribeWithFallback, clearDrivers};

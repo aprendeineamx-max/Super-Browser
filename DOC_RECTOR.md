@@ -72,3 +72,8 @@ Este documento define las reglas de juego para que el agente implemente las mejo
 - Scripts de build/test CI (lint, unit, snapshots, smoke Playwright).
 - Subcarpeta `embedded/` con blueprint de navegador portable y scripts de build (binarios gestionados con LFS si se agregan).
 
+### Progreso reciente (Fase 1)
+- Añadido pipeline STT con drivers registrables, fallback y métricas por proveedor.
+- Logger estructurado con nivel y muestreo configurable; flags `EMBEDDED_MODE`/`ADVANCED_UI`.
+- Opciones iniciales para orden de fallback y proveedor HTTP personalizado.
+- Pruebas mínimas: retry/timeout y pipeline de drivers (node --test).

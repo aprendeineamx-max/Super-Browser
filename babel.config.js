@@ -11,7 +11,7 @@ module.exports = function (api) {
     [
       '@babel/env',
       {
-        modules: false,
+        modules: process.env.BABEL_ENV === 'test' ? 'commonjs' : false,
         bugfixes: true,
         useBuiltIns: 'usage',
         corejs: {version: corejsVersion}

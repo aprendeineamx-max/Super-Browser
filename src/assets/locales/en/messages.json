@@ -13,10 +13,26 @@
     "message": "Services",
     "description": "Title of the options section."
   },
+  "optionSectionTitle_sttAdvanced": {
+    "message": "Advanced STT",
+    "description": "Title of the advanced speech settings section."
+  },
+  "optionSectionTitle_logging": {
+    "message": "Logging",
+    "description": "Title of the logging section."
+  },
 
   "optionTitle_speechService": {
     "message": "Speech recognition",
     "description": "Title of the option."
+  },
+  "optionTitle_speechServiceOrder": {
+    "message": "Fallback order (comma separated)",
+    "description": "Title of the option."
+  },
+  "optionDescription_speechServiceOrder": {
+    "message": "Example: googleSpeechApi,ibmSpeechApi,customHttp",
+    "description": "Description of the option."
   },
 
   "optionValue_speechService_googleSpeechApi": {
@@ -38,6 +54,10 @@
     "message": "Wit.ai (managed)",
     "description": "Value of the option."
   },
+  "optionValue_speechService_customHttp": {
+    "message": "Custom HTTP",
+    "description": "Value of the option."
+  },
 
   "optionValue_speechService_witSpeechApi": {
     "message": "Wit.ai",
@@ -46,6 +66,26 @@
 
   "optionTitle_microsoftSpeechApiLoc": {
     "message": "API location",
+    "description": "Title of the option."
+  },
+  "optionTitle_customSpeechApiUrl": {
+    "message": "Custom STT endpoint URL",
+    "description": "Title of the option."
+  },
+  "optionTitle_customSpeechApiMethod": {
+    "message": "HTTP method",
+    "description": "Title of the option."
+  },
+  "optionTitle_customSpeechApiHeaders": {
+    "message": "Headers (JSON)",
+    "description": "Title of the option."
+  },
+  "optionTitle_customSpeechApiBodyTemplate": {
+    "message": "Body template ({{audioBase64}}, {{lang}})",
+    "description": "Title of the option."
+  },
+  "optionTitle_customSpeechApiResponsePath": {
+    "message": "Response path (dot notation)",
     "description": "Title of the option."
   },
 
@@ -197,6 +237,18 @@
   "optionValue_microsoftSpeechApiLoc_westus3": {
     "message": "West US 3",
     "description": "Value of the option."
+  },
+  "optionTitle_logLevel": {
+    "message": "Log level",
+    "description": "Title of the option."
+  },
+  "optionTitle_logSampleRate": {
+    "message": "Log sampling (0-1)",
+    "description": "Title of the option."
+  },
+  "optionDescription_logSampleRate": {
+    "message": "Fraction of log entries to emit (1 = all)",
+    "description": "Description of the option."
   },
 
   "optionSectionTitle_client": {

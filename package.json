@@ -30,6 +30,7 @@
     "start:chrome": "web-ext run -s dist/chrome -t chromium",
     "start:firefox": "web-ext run -s dist/firefox -t firefox-desktop",
     "inspect": "cross-env NODE_ENV=production gulp inspect",
+    "test": "cross-env BABEL_ENV=test NODE_PATH=./src node --test --require @babel/register",
     "update": "ncu --dep prod,dev,peer --filterVersion '^*' --upgrade",
     "release": "commit-and-tag-version",
     "push": "git push --follow-tags origin main"
@@ -52,6 +53,7 @@
     "@babel/core": "^7.24.6",
     "@babel/preset-env": "^7.24.6",
     "babel-loader": "^9.1.3",
+    "@babel/register": "^7.24.6",
     "commit-and-tag-version": "^12.4.1",
     "cross-env": "^7.0.3",
     "css-loader": "^7.1.2",
