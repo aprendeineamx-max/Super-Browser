@@ -10,7 +10,8 @@ const {spawnSync} = require('node:child_process');
 async function main() {
   const targets = [
     'https://www.google.com/recaptcha/api2/demo',
-    'https://www.recaptcha.net/recaptcha/api2/demo'
+    'https://www.recaptcha.net/recaptcha/api2/demo',
+    'https://patrickhlauke.github.io/recaptcha/'
   ];
   const extPath =
     process.env.BUSTER_EXT_PATH ||
