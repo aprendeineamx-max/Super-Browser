@@ -52,9 +52,10 @@ if (!chromePath) {
   process.exit(1);
 }
 
+const scriptDir = __dirname;
 const extPath =
   process.env.BUSTER_EXT_PATH ||
-  path.join(process.cwd(), 'dist', 'chrome');
+  path.resolve(scriptDir, '..', '..', 'dist', 'chrome');
 console.log('[Launcher] Buscando extensión en:', extPath);
 
 const manifestPath = path.join(extPath, 'manifest.json');
@@ -120,6 +121,7 @@ console.log('Launching Chrome with extension:', extPath);
 console.log('Profile:', profilePath);
 console.log('Target URL:', targetUrl);
 console.log('[buster-launcher] Identity (UA):', ua);
+console.log('Argumentos de lanzamiento:', args);
 const child = spawn(chromePath, args, {
   stdio: 'inherit',
   detached: true
