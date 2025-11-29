@@ -54,7 +54,8 @@ if (!chromePath) {
 
 const extPath =
   process.env.BUSTER_EXT_PATH ||
-  path.join(__dirname, '..', '..', 'dist', 'chrome');
+  path.join(process.cwd(), 'dist', 'chrome');
+console.log('[Launcher] Buscando extensión en:', extPath);
 
 const manifestPath = path.join(extPath, 'manifest.json');
 
@@ -80,6 +81,12 @@ function ensureBuild() {
     console.error('[buster-launcher] manifest.json still missing after build, aborting.');
     process.exit(1);
   }
+}
+
+if (!fs.existsSync(manifestPath)) {
+  console.error('[FATAL] No se encontró manifest.json en:', extPath);
+  console.error('Asegúrate de haber ejecutado "npm run build:prod:chrome"');
+  process.exit(1);
 }
 
 const profilePath =
