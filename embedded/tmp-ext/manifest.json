@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Tmp MV3 Test",
+  "version": "0.0.1",
+  "description": "Minimal MV3 extension to verify Chrome load flags.",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Tmp MV3 Test"
+  }
+}

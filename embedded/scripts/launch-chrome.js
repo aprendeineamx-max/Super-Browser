@@ -52,9 +52,13 @@ const args = [
   '--no-first-run',
   '--no-default-browser-check',
   '--disable-popup-blocking',
-  '--disable-blink-features=AutomationControlled',
   targetUrl
 ];
+
+// Allow skipping the automation flag if it interferes with UI injection.
+if (process.env.BUSTER_NO_AUTOMATION !== '1') {
+  args.splice(args.length - 1, 0, '--disable-blink-features=AutomationControlled');
+}
 
 console.log('Launching Chrome with extension:', extPath);
 console.log('Profile:', profilePath);

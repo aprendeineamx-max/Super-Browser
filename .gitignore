@@ -2,6 +2,7 @@
 /app/
 /artifacts/
 /dist/
+/embedded/dist/
 
 /secrets.json
 
@@ -14,6 +15,7 @@ node_modules/
 /npm-debug.log
 
 /.vscode
+.env.local
 
 xcuserdata/
 
