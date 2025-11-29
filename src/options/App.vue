@@ -375,14 +375,22 @@
             <span>{{ getText('label_logsTotal') }}</span>
             <strong>{{ logSummary.total }}</strong>
           </div>
-          <div class="summary-item">
-            <span>info</span><strong>{{ logSummary.info || 0 }}</strong>
-          </div>
-          <div class="summary-item">
-            <span>warn</span><strong>{{ logSummary.warn || 0 }}</strong>
-          </div>
-          <div class="summary-item">
-            <span>error</span><strong>{{ logSummary.error || 0 }}</strong>
+          <div class="summary-bar">
+            <div
+              class="summary-segment info"
+              :style="{width: `${logSummary.total ? (logSummary.info / logSummary.total) * 100 : 0}%`}"
+              :title="`info: ${logSummary.info || 0}`"
+            ></div>
+            <div
+              class="summary-segment warn"
+              :style="{width: `${logSummary.total ? (logSummary.warn / logSummary.total) * 100 : 0}%`}"
+              :title="`warn: ${logSummary.warn || 0}`"
+            ></div>
+            <div
+              class="summary-segment error"
+              :style="{width: `${logSummary.total ? (logSummary.error / logSummary.total) * 100 : 0}%`}"
+              :title="`error: ${logSummary.error || 0}`"
+            ></div>
           </div>
         </div>
         <div class="option metrics">
@@ -1144,6 +1152,31 @@ export default {
   display: flex;
   gap: 8px;
   margin-bottom: 8px;
+}
+
+.summary-bar {
+  display: flex;
+  width: 100%;
+  height: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #d1d5db;
+  background: #f3f4f6;
+}
+
+.summary-segment.info {
+  background: #22c55e;
+}
+.summary-segment.warn {
+  background: #f59e0b;
+}
+.summary-segment.error {
+  background: #ef4444;
+}
+
+[data-theme='highContrast'] .summary-bar {
+  border-color: #f5f5f5;
+  background: #111827;
 }
 
 .logs-list {
