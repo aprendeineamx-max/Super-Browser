@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const {spawn, execSync} = require('node:child_process');
 const {computeExecutablePath, BrowserPlatform} = require('@puppeteer/browsers');
+const userAgents = require('./user-agents');
 
 const DEFAULT_PATHS = [
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -90,24 +91,28 @@ const targetUrl =
 
 ensureBuild();
 
+// Pick a random UA from the pool.
+const ua = userAgents[Math.floor(Math.random() * userAgents.length)];
+
 const args = [
   `--disable-extensions-except=${extPath}`,
   `--load-extension=${extPath}`,
   `--user-data-dir=${profilePath}`,
+  `--user-agent=${ua}`,
   '--no-first-run',
   '--no-default-browser-check',
   '--disable-popup-blocking',
+  '--disable-blink-features=AutomationControlled',
+  '--disable-infobars',
+  '--exclude-switches=enable-automation',
+  '--use-mock-keychain',
   targetUrl
 ];
-
-// Allow skipping the automation flag if it interferes with UI injection.
-if (process.env.BUSTER_NO_AUTOMATION !== '1') {
-  args.splice(args.length - 1, 0, '--disable-blink-features=AutomationControlled');
-}
 
 console.log('Launching Chrome with extension:', extPath);
 console.log('Profile:', profilePath);
 console.log('Target URL:', targetUrl);
+console.log('[buster-launcher] Identity (UA):', ua);
 const child = spawn(chromePath, args, {
   stdio: 'inherit',
   detached: true
