@@ -262,6 +262,14 @@
     "message": "Buscar en logs",
     "description": "Title of the option."
   },
+  "optionTitle_logDateFrom": {
+    "message": "Desde fecha",
+    "description": "Title of the option."
+  },
+  "optionTitle_logDateTo": {
+    "message": "Hasta fecha",
+    "description": "Title of the option."
+  },
   "optionTitle_sttMetrics": {
     "message": "Métricas STT",
     "description": "Title of the option."

@@ -251,11 +251,19 @@
     "description": "Description of the option."
   },
   "optionTitle_logFilter": {
-    "message": "Filter by level",
+    "message": "Filtrar por nível",
     "description": "Title of the option."
   },
   "optionTitle_logSearch": {
-    "message": "Search logs",
+    "message": "Buscar nos logs",
+    "description": "Title of the option."
+  },
+  "optionTitle_logDateFrom": {
+    "message": "De (data)",
+    "description": "Title of the option."
+  },
+  "optionTitle_logDateTo": {
+    "message": "Até (data)",
     "description": "Title of the option."
   },
   "optionTitle_sttMetrics": {
@@ -728,3 +736,4 @@
     "description": "Error message."
   }
 }
+

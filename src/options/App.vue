@@ -324,6 +324,18 @@
           >
           </vn-text-field>
         </div>
+        <div class="option text-field dates">
+          <vn-text-field
+            type="date"
+            :label="getText('optionTitle_logDateFrom')"
+            v-model="logDateFrom"
+          ></vn-text-field>
+          <vn-text-field
+            type="date"
+            :label="getText('optionTitle_logDateTo')"
+            v-model="logDateTo"
+          ></vn-text-field>
+        </div>
         <div class="option select">
           <vn-select
             :label="getText('optionTitle_logFilter')"
@@ -599,6 +611,8 @@ export default {
       logLevelFilter: 'all',
       logSearch: '',
       logScopeFilter: 'all',
+      logDateFrom: '',
+      logDateTo: '',
       sttMetrics: {},
       metricsLoading: false,
 
@@ -645,6 +659,9 @@ export default {
     },
 
     filteredLogs: function () {
+      const from = this.logDateFrom ? new Date(this.logDateFrom).getTime() : null;
+      const to = this.logDateTo ? new Date(this.logDateTo).getTime() : null;
+
       return (this.logs || [])
         .filter(log =>
           this.logLevelFilter === 'all' ? true : log.level === this.logLevelFilter
@@ -652,6 +669,11 @@ export default {
         .filter(log =>
           this.logScopeFilter === 'all' ? true : log.scope === this.logScopeFilter
         )
+        .filter(log => {
+          if (from && log.ts && Number(log.ts) < from) return false;
+          if (to && log.ts && Number(log.ts) > to) return false;
+          return true;
+        })
         .filter(log => {
           if (!this.logSearch) return true;
           const q = this.logSearch.toLowerCase();

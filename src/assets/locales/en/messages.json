@@ -262,6 +262,14 @@
     "message": "Search logs",
     "description": "Title of the option."
   },
+  "optionTitle_logDateFrom": {
+    "message": "From date",
+    "description": "Title of the option."
+  },
+  "optionTitle_logDateTo": {
+    "message": "To date",
+    "description": "Title of the option."
+  },
   "optionTitle_sttMetrics": {
     "message": "STT metrics",
     "description": "Title of the option."

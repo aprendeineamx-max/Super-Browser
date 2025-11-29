@@ -35,3 +35,15 @@ test('filterLogs filters by scope', () => {
   assert.strictEqual(result.length, 1);
   assert.strictEqual(result[0].message, 'b');
 });
+
+test('filterLogs filters by date range', () => {
+  const now = Date.now();
+  const logs = [
+    {level: 'info', message: 'old', ts: now - 100000},
+    {level: 'info', message: 'new', ts: now}
+  ];
+
+  const result = filterLogs({logs, fromTs: now - 1000});
+  assert.strictEqual(result.length, 1);
+  assert.strictEqual(result[0].message, 'new');
+});
