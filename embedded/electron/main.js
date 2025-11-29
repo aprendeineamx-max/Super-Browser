@@ -8,10 +8,21 @@ const electronModule = require('electron');
 
 // If not running under Electron, spawn Electron binary with this script.
 if (!process.versions.electron) {
-  const electronBin =
+  let electronBin =
     typeof electronModule === 'string'
       ? electronModule
       : electronModule.default || electronModule;
+
+  if (!electronBin || electronBin === true) {
+    // fallback to devDependency binary path
+    electronBin = path.join(
+      __dirname,
+      '..',
+      'node_modules',
+      '.bin',
+      process.platform === 'win32' ? 'electron.cmd' : 'electron'
+    );
+  }
 
   if (!electronBin) {
     console.error(
