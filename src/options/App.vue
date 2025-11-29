@@ -148,6 +148,9 @@
         {{ getText('optionSectionTitle_sttAdvanced') }}
       </div>
       <div class="option-wrap">
+        <div class="option option-subtitle">
+          <div class="subsection-title">Gestión de proveedores STT</div>
+        </div>
         <div class="option text-field">
           <vn-text-field
             :label="getText('optionTitle_speechServiceOrder')"
@@ -215,6 +218,40 @@
             v-model.trim="options.customSpeechApiResponsePath"
           >
           </vn-text-field>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Comportamiento</div>
+      <div class="option-wrap">
+        <div class="option">
+          <vn-switch
+            label="Auto-resolver"
+            v-model="options.autoResolveEnabled"
+          ></vn-switch>
+        </div>
+        <div class="option text-field">
+          <vn-text-field
+            label="Timeout del solver (ms)"
+            type="number"
+            v-model.number="options.solverTimeoutMs"
+          ></vn-text-field>
+        </div>
+        <div class="option text-field">
+          <vn-text-field
+            label="Reintentos del solver"
+            type="number"
+            v-model.number="options.solverRetryCount"
+          ></vn-text-field>
+        </div>
+        <div class="option text-field">
+          <vn-text-field
+            label="Hotkey de activación manual"
+            hint="Ejemplo: Ctrl+Shift+L"
+            persistent-hint
+            v-model.trim="options.hotkey"
+          ></vn-text-field>
         </div>
       </div>
     </div>
@@ -540,11 +577,17 @@
                 variant="tonal"
                 @click="logPage = Math.min(logTotalPages, logPage + 1)"
                 >{{ getText('buttonLabel_nextPage') }}</vn-button
-              >
+            >
             </div>
           </div>
           <div class="logs-empty" v-else>
             {{ getText('label_noLogs') }}
+          </div>
+          <div class="logs-preview">
+            <div class="subsection-title">Visor rapido</div>
+            <div class="log-preview-box">
+              <pre>{{ logsPreview }}</pre>
+            </div>
           </div>
         </div>
       </div>
@@ -717,6 +760,10 @@ export default {
         customSpeechApiResponsePath: '',
         logLevel: 'info',
         logSampleRate: 1,
+        autoResolveEnabled: false,
+        solverTimeoutMs: 15000,
+        solverRetryCount: 2,
+        hotkey: '',
         witSpeechApiKeys: {},
         loadEnglishChallenge: false,
         tryEnglishSpeechModel: false,
@@ -742,6 +789,13 @@ export default {
           : [];
         this.options.speechServiceOrder = next;
       }
+    },
+
+    logsPreview: function () {
+      const sample = this.filteredLogs.slice(0, 10).map(log => {
+        return `[${log.level || ''}] ${this.formatTs(log.ts)} ${log.scope || ''} :: ${log.message || ''}`;
+      });
+      return sample.join('\n') || 'Sin logs cargados.';
     },
 
     filteredLogs: function () {
@@ -1254,6 +1308,26 @@ export default {
   font-size: 13px;
 }
 
+.logs-preview {
+  margin-top: 12px;
+}
+
+.log-preview-box {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px;
+  background: #0b172a;
+  color: #f5f5f5;
+  max-height: 200px;
+  overflow: auto;
+}
+
+[data-theme='highContrast'] .log-preview-box {
+  border-color: #f5f5f5;
+  background: #0b172a;
+  color: #f5f5f5;
+}
+
 [data-theme='highContrast'] .logs-list,
 [data-theme='highContrast'] .metrics-table {
   background: #111827;
@@ -1294,6 +1368,14 @@ export default {
   display: flex;
   align-items: center;
   height: 20px;
+
+  &.option-subtitle {
+    height: auto;
+    .subsection-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+  }
 
   &.button {
     height: 40px;
