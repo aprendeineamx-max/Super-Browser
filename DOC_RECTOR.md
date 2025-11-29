@@ -63,7 +63,7 @@ Este documento define las reglas de juego para implementar las mejoras solicitad
 - Testing: ejecutar unit/smoke cuando esten disponibles; si no, documentar brechas y como correrlos.
 - Accesibilidad e i18n son obligatorios para nuevas pantallas/controles.
 - Para el subproyecto embebido, preferir CEF/JCEF para potencia; Electron como alternativa rapida; siempre exponer interfaz de automatizacion (CDP/WebSocket).
-- Al final de cada respuesta, incluye un bloque de texto listo para copiar/pegar con las indicaciones completas y actualizadas para continuar (basado en el estado y sugerencias actuales, no un mensaje fijo), de modo que el usuario solo responda “Ok” para que ejecutes todo.
+- Al final de cada respuesta, incluye un bloque de texto listo para copiar/pegar con las indicaciones completas y actualizadas para continuar (basado en el estado y sugerencias actuales, no un mensaje fijo), de modo que el usuario solo responda “Ok” para que ejecutes todo. No reutilices bloques previos si ya no aplican; genera uno nuevo acorde al estado actual.
 
 ## Proximos entregables (concretos)
 - Esqueleto STT driver + fallback y metricas (background).
