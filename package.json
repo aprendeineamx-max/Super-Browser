@@ -33,6 +33,7 @@
     "embedded:electron": "npm run setup:deps && npx electron embedded/electron/main.js",
     "embedded:playwright": "npm run setup:deps && node embedded/playwright/run.js",
     "embedded:playwright:smoke": "npm run setup:deps && node embedded/playwright/smoke.js",
+    "embedded:playwright:verify": "npm run setup:deps && node embedded/playwright/verify-solver.js",
     "embedded:clean-profiles": "node embedded/scripts/clean-profiles.js",
     "warn:secrets": "node embedded/scripts/announce-secrets.js",
     "clean:dist": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true});\"",
