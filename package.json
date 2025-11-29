@@ -33,6 +33,8 @@
     "embedded:playwright": "node embedded/playwright/run.js",
     "embedded:playwright:smoke": "node embedded/playwright/smoke.js",
     "embedded:clean-profiles": "node embedded/scripts/clean-profiles.js",
+    "clean:dist": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true});\"",
+    "smoke:playwright": "npm run clean:dist && npm run build:prod:chrome && npm run embedded:playwright:smoke",
     "inspect": "cross-env NODE_ENV=production gulp inspect",
     "test": "cross-env BABEL_ENV=test NODE_PATH=./src node --test --require @babel/register",
     "update": "ncu --dep prod,dev,peer --filterVersion '^*' --upgrade",

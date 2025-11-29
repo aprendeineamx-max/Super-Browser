@@ -63,3 +63,10 @@ Adapta este snippet a tu contenedor o framework de automatización.
 ## Notas
 - Mantén permisos y CSP abiertas en el manifest embebido si el contenedor lo permite, para máxima compatibilidad.
 - Si el contenedor no soporta `nativeMessaging` u `offscreen`, elimina esas claves del manifest embebido.
+
+## Scripts de conveniencia (npm)
+- `npm run embedded:playwright`: lanza Playwright con la extensión cargada (perfil persistente configurable con `BUSTER_PROFILE_PATH`).
+- `npm run embedded:playwright:smoke`: smoke headless tras haber generado `dist/chrome` (o define `BUSTER_EXT_PATH`).
+- `npm run embedded:electron`: intenta lanzar Electron con la extensión; requiere entorno con GUI y que Electron exponga `app`.
+- `npm run embedded:clean-profiles`: limpia perfiles temporales (Playwright/Electron).
+- `npm run smoke:playwright`: limpia `dist`, construye `dist/chrome` y ejecuta el smoke de Playwright.
