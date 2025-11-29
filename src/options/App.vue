@@ -324,6 +324,13 @@
           >
           </vn-text-field>
         </div>
+        <div class="option text-field">
+          <vn-text-field
+            :label="getText('optionTitle_logHost')"
+            v-model.trim="logHost"
+          >
+          </vn-text-field>
+        </div>
         <div class="option text-field dates">
           <vn-text-field
             type="date"
@@ -488,9 +495,9 @@
           </div>
           <div class="logs-list" v-if="filteredLogs.length">
             <div class="log-row" v-for="(log, idx) in pagedLogs" :key="idx">
-              <span class="log-ts">{{ formatTs(log.ts) }}</span>
-              <span class="log-level">{{ log.level }}</span>
-              <span class="log-scope">{{ log.scope }}</span>
+              <span class="log-ts" @click="setSort('ts')">{{ formatTs(log.ts) }}</span>
+              <span class="log-level" @click="setSort('level')">{{ log.level }}</span>
+              <span class="log-scope" @click="setSort('scope')">{{ log.scope }}</span>
               <span class="log-message">{{ log.message }}</span>
             </div>
             <div class="logs-pagination">
@@ -667,6 +674,8 @@ export default {
       logPageSize: 25,
       logDateFrom: '',
       logDateTo: '',
+      logHost: '',
+      logSort: {column: 'ts', dir: 'desc'},
       sttMetrics: {},
       metricsLoading: false,
 
@@ -716,7 +725,7 @@ export default {
       const from = this.logDateFrom ? new Date(this.logDateFrom).getTime() : null;
       const to = this.logDateTo ? new Date(this.logDateTo).getTime() : null;
 
-      return (this.logs || [])
+      const filtered = (this.logs || [])
         .filter(log =>
           this.logLevelFilter === 'all' ? true : log.level === this.logLevelFilter
         )
@@ -729,6 +738,10 @@ export default {
           return true;
         })
         .filter(log => {
+          if (!this.logHost) return true;
+          return (log.host || '').toLowerCase().includes(this.logHost.toLowerCase());
+        })
+        .filter(log => {
           if (!this.logSearch) return true;
           const q = this.logSearch.toLowerCase();
           return (
@@ -736,6 +749,22 @@ export default {
             (log.message || '').toLowerCase().includes(q)
           );
         });
+
+      const {column, dir} = this.logSort;
+      const sorted = filtered.slice().sort((a, b) => {
+        const va = a[column] || '';
+        const vb = b[column] || '';
+        if (column === 'ts') {
+          return (Number(vb) || 0) - (Number(va) || 0);
+        }
+        return va.localeCompare(vb);
+      });
+
+      if (dir === 'asc') {
+        sorted.reverse();
+      }
+
+      return sorted;
     },
 
       logScopeItems: function () {
@@ -977,12 +1006,13 @@ export default {
 
     downloadLogsCsv: function () {
       const rows = this.filteredLogs;
-      const header = ['ts', 'level', 'scope', 'message'];
+      const header = ['ts', 'level', 'scope', 'host', 'message'];
       const lines = [header.join(',')].concat(
         rows.map(r => {
           const msg = (r.message || '').replace(/"/g, '""');
           const scope = (r.scope || '').replace(/"/g, '""');
-          return `${r.ts || ''},${r.level || ''},"${scope}","${msg}"`;
+          const host = (r.host || '').replace(/"/g, '""');
+          return `${r.ts || ''},${r.level || ''},"${scope}","${host}","${msg}"`;
         })
       );
       const blob = new Blob([lines.join('\n')], {

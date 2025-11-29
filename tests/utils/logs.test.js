@@ -47,3 +47,14 @@ test('filterLogs filters by date range', () => {
   assert.strictEqual(result.length, 1);
   assert.strictEqual(result[0].message, 'new');
 });
+
+test('filterLogs filters by host', () => {
+  const logs = [
+    {level: 'info', message: 'a', host: 'example.com'},
+    {level: 'info', message: 'b', host: 'other.net'}
+  ];
+
+  const result = filterLogs({logs, host: 'example'});
+  assert.strictEqual(result.length, 1);
+  assert.strictEqual(result[0].message, 'a');
+});

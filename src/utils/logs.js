@@ -4,9 +4,11 @@ function filterLogs({
   scope = 'all',
   search = '',
   fromTs = null,
-  toTs = null
+  toTs = null,
+  host = ''
 } = {}) {
   const q = (search || '').toLowerCase();
+  const hostFilter = (host || '').toLowerCase();
 
   return logs
     .filter(log => (level === 'all' ? true : log.level === level))
@@ -15,6 +17,10 @@ function filterLogs({
       if (fromTs && log.ts && Number(log.ts) < fromTs) return false;
       if (toTs && log.ts && Number(log.ts) > toTs) return false;
       return true;
+    })
+    .filter(log => {
+      if (!hostFilter) return true;
+      return (log.host || '').toLowerCase().includes(hostFilter);
     })
     .filter(log => {
       if (!q) return true;
