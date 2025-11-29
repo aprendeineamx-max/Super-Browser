@@ -3,15 +3,17 @@
 //           npm install playwright-chromium
 
 const path = require('node:path');
+const fs = require('node:fs');
+const os = require('node:os');
 const {chromium} = require('playwright-chromium');
 
 async function main() {
   const extPath =
     process.env.BUSTER_EXT_PATH ||
-    path.join(__dirname, '..', 'dist', 'chrome');
+    path.join(__dirname, '..', '..', 'dist', 'chrome');
   const profilePath =
     process.env.BUSTER_PROFILE_PATH ||
-    path.join(__dirname, 'profiles', 'smoke');
+    fs.mkdtempSync(path.join(os.tmpdir(), 'buster-playwright-smoke-'));
 
   const context = await chromium.launchPersistentContext(
     profilePath,

@@ -2,14 +2,16 @@
 // Requires: npm install playwright-chromium (run separately; not added to package dependencies here).
 
 const path = require('node:path');
+const fs = require('node:fs');
+const os = require('node:os');
 const {chromium} = require('playwright-chromium');
 
 const EXT_PATH =
   process.env.BUSTER_EXT_PATH ||
-  path.join(__dirname, '..', 'dist', 'chrome'); // assumes npm run build:prod:chrome
+  path.join(__dirname, '..', '..', 'dist', 'chrome'); // assumes npm run build:prod:chrome
 const PROFILE_PATH =
   process.env.BUSTER_PROFILE_PATH ||
-  path.join(__dirname, 'profiles', 'tmp');
+  fs.mkdtempSync(path.join(os.tmpdir(), 'buster-playwright-'));
 
 async function main() {
   const context = await chromium.launchPersistentContext(
@@ -25,6 +27,9 @@ async function main() {
 
   const page = await context.newPage();
   await page.goto('https://www.google.com/recaptcha/api2/demo');
+
+  console.log('Playwright launched with extension. Profile:', PROFILE_PATH);
+  await new Promise(() => {});
 }
 
 main().catch(err => {

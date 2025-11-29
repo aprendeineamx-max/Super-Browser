@@ -2,16 +2,18 @@
 // Requires: npm run build:prod:chrome (dist/chrome), ensure deps via setup:deps.
 
 const path = require('node:path');
+const fs = require('node:fs');
+const os = require('node:os');
 const {chromium} = require('playwright-chromium');
 const {spawnSync} = require('node:child_process');
 
 async function main() {
   const extPath =
     process.env.BUSTER_EXT_PATH ||
-    path.join(__dirname, '..', 'dist', 'chrome');
+    path.join(__dirname, '..', '..', 'dist', 'chrome');
   const profilePath =
     process.env.BUSTER_PROFILE_PATH ||
-    path.join(__dirname, 'profiles', 'verify');
+    fs.mkdtempSync(path.join(os.tmpdir(), 'buster-playwright-verify-'));
 
   // Ensure manifest exists; if not, build dist/chrome.
   const manifestPath = path.join(extPath, 'manifest.json');
