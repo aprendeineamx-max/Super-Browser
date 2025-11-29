@@ -270,6 +270,10 @@
     "message": "Clear metrics",
     "description": "Label of the button."
   },
+  "buttonLabel_downloadMetrics": {
+    "message": "Download metrics",
+    "description": "Label of the button."
+  },
   "label_noMetrics": {
     "message": "No metrics yet",
     "description": "Empty state label."

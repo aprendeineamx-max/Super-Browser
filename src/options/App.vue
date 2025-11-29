@@ -353,6 +353,15 @@
               ><vn-icon icon="delete"></vn-icon>
               {{ getText('buttonLabel_clearMetrics') }}</vn-button
             >
+            <vn-button
+              class="vn-icon--start"
+              :loading="metricsLoading"
+              @click="downloadMetrics"
+              variant="tonal"
+              size="small"
+              ><vn-icon icon="download"></vn-icon>
+              {{ getText('buttonLabel_downloadMetrics') }}</vn-button
+            >
           </div>
           <div class="metrics-table" v-if="metricsTable.length">
             <div class="metrics-row metrics-head">
@@ -622,12 +631,17 @@ export default {
     },
 
     metricsTable: function () {
-      return Object.entries(this.sttMetrics || {}).map(([driver, stats]) => ({
-        driver,
-        ok: stats.ok || 0,
-        fail: stats.fail || 0,
-        avgMs: stats.avgMs || 0
-      }));
+      const rows = Object.entries(this.sttMetrics || {}).map(
+        ([driver, stats]) => ({
+          driver,
+          ok: stats.ok || 0,
+          fail: stats.fail || 0,
+          avgMs: stats.avgMs || 0,
+          total: (stats.ok || 0) + (stats.fail || 0)
+        })
+      );
+
+      return rows.sort((a, b) => b.total - a.total);
     }
   },
 
@@ -770,6 +784,19 @@ export default {
       } finally {
         this.metricsLoading = false;
       }
+    },
+
+    downloadMetrics: function () {
+      const rows = this.metricsTable;
+      const blob = new Blob([JSON.stringify(rows, null, 2)], {
+        type: 'application/json'
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `buster-metrics-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
     },
 
     downloadLogs: function () {
