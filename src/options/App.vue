@@ -533,7 +533,7 @@ export default {
           {scope: 'optionValue_witSpeechApiLang'}
         ),
         ...getListItems(
-          {appTheme: ['auto', 'light', 'dark']},
+          {appTheme: ['auto', 'light', 'dark', 'highContrast']},
           {scope: 'optionValue_appTheme'}
         ),
         logLevel: [
@@ -940,6 +940,26 @@ export default {
 .logs-empty {
   color: #6b7280;
   font-size: 13px;
+}
+
+[data-theme='highContrast'] .logs-list,
+[data-theme='highContrast'] .metrics-table {
+  background: #111827;
+  border-color: #f5f5f5;
+  color: #f5f5f5;
+}
+
+[data-theme='highContrast'] .log-level.debug {
+  color: #60a5fa;
+}
+[data-theme='highContrast'] .log-level.info {
+  color: #34d399;
+}
+[data-theme='highContrast'] .log-level.warn {
+  color: #fcd34d;
+}
+[data-theme='highContrast'] .log-level.error {
+  color: #f87171;
 }
 
 .section-desc {

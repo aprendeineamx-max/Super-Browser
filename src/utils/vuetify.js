@@ -22,13 +22,28 @@ const DarkTheme = {
   }
 };
 
+const HighContrastTheme = {
+  dark: true,
+  colors: {
+    background: '#0A0A0A',
+    surface: '#0A0A0A',
+    primary: '#FFFFFF',
+    secondary: '#FFD166',
+    error: '#FF4D4F'
+  }
+};
+
 async function configTheme(vuetify, {theme = ''} = {}) {
   async function setTheme({theme = '', dispatchChange = true} = {}) {
     if (!theme) {
       theme = await getAppTheme();
     }
 
-    document.documentElement.style.setProperty('color-scheme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+
+    const colorScheme =
+      theme === 'dark' || theme === 'highContrast' ? 'dark' : 'light';
+    document.documentElement.style.setProperty('color-scheme', colorScheme);
     vuetify.theme.global.name.value = theme;
 
     if (dispatchChange) {
@@ -46,7 +61,11 @@ async function configVuetify(app) {
 
   const vuetify = createVuetify({
     theme: {
-      themes: {light: LightTheme, dark: DarkTheme},
+      themes: {
+        light: LightTheme,
+        dark: DarkTheme,
+        highContrast: HighContrastTheme
+      },
       defaultTheme: theme
     },
     defaults: {
