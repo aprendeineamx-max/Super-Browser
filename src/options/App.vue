@@ -503,9 +503,24 @@
           </div>
           <div class="logs-list" v-if="filteredLogs.length">
             <div class="log-row" v-for="(log, idx) in pagedLogs" :key="idx">
-              <span class="log-ts" @click="setSort('ts')">{{ formatTs(log.ts) }}</span>
-              <span class="log-level" @click="setSort('level')">{{ log.level }}</span>
-              <span class="log-scope" @click="setSort('scope')">{{ log.scope }}</span>
+              <span
+                class="log-ts"
+                :class="{'sorted': logSort.column === 'ts'}"
+                @click="setSort('ts')"
+                >{{ formatTs(log.ts) }}</span
+              >
+              <span
+                class="log-level"
+                :class="{'sorted': logSort.column === 'level'}"
+                @click="setSort('level')"
+                >{{ log.level }}</span
+              >
+              <span
+                class="log-scope"
+                :class="{'sorted': logSort.column === 'scope'}"
+                @click="setSort('scope')"
+                >{{ log.scope }}</span
+              >
               <span class="log-message">{{ log.message }}</span>
             </div>
             <div class="logs-pagination">
@@ -1034,6 +1049,15 @@ export default {
       URL.revokeObjectURL(url);
     },
 
+    setSort: function (column) {
+      if (this.logSort.column === column) {
+        this.logSort.dir = this.logSort.dir === 'desc' ? 'asc' : 'desc';
+      } else {
+        this.logSort = {column, dir: 'desc'};
+      }
+      this.logPage = 1;
+    },
+
     formatTs: function (ts) {
       if (!ts) return '';
       const d = new Date(ts);
@@ -1213,6 +1237,11 @@ export default {
 }
 .log-level.error {
   color: #dc2626;
+}
+
+.sorted {
+  text-decoration: underline;
+  font-weight: 700;
 }
 
 .log-message {

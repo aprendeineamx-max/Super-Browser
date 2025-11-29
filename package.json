@@ -38,6 +38,7 @@
     "clean:dist": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true});\"",
     "smoke:playwright": "npm run clean:dist && npm run warn:secrets && npm run build:prod:chrome && npm run setup:deps && npm run embedded:playwright:smoke",
     "setup:electron:global": "node embedded/scripts/install-electron-global.js",
+    "browserslist:update": "npx update-browserslist-db@latest",
     "inspect": "cross-env NODE_ENV=production gulp inspect",
     "test": "cross-env BABEL_ENV=test NODE_PATH=./src node --test --require @babel/register",
     "update": "ncu --dep prod,dev,peer --filterVersion '^*' --upgrade",
