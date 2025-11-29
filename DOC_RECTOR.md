@@ -76,4 +76,5 @@ Este documento define las reglas de juego para que el agente implemente las mejo
 - Añadido pipeline STT con drivers registrables, fallback y métricas por proveedor.
 - Logger estructurado con nivel y muestreo configurable; flags `EMBEDDED_MODE`/`ADVANCED_UI`.
 - Opciones iniciales para orden de fallback y proveedor HTTP personalizado.
-- Pruebas mínimas: retry/timeout y pipeline de drivers (node --test).
+- UI de logging básica en opciones (visualización/clear); configuración de nivel y sampling.
+- Pruebas mínimas: retry/timeout, pipeline de drivers y hook de logger (node --test).

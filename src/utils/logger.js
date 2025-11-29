@@ -5,7 +5,10 @@ const levels = {
   error: 40
 };
 
-function createLogger(scope = 'app', {level = 'info', sampleRate = 1} = {}) {
+function createLogger(
+  scope = 'app',
+  {level = 'info', sampleRate = 1, onLog = null} = {}
+) {
   let minLevel = levels[level] || levels.info;
   let rate = sampleRate;
 
@@ -29,6 +32,10 @@ function createLogger(scope = 'app', {level = 'info', sampleRate = 1} = {}) {
       `[${scope}] ${lvl}: ${message}`,
       context
     );
+
+    if (onLog) {
+      onLog(payload);
+    }
 
     return payload;
   }

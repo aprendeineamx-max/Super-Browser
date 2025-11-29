@@ -317,6 +317,39 @@
           >
           </vn-text-field>
         </div>
+        <div class="option logs">
+          <div class="logs-actions">
+            <vn-button
+              class="vn-icon--start"
+              :loading="logsLoading"
+              @click="fetchLogs"
+              variant="tonal"
+              size="small"
+              ><vn-icon icon="refresh"></vn-icon>
+              {{ getText('buttonLabel_refreshLogs') }}</vn-button
+            >
+            <vn-button
+              class="vn-icon--start"
+              :loading="logsLoading"
+              @click="clearLogs"
+              variant="tonal"
+              size="small"
+              ><vn-icon icon="delete"></vn-icon>
+              {{ getText('buttonLabel_clearLogs') }}</vn-button
+            >
+          </div>
+          <div class="logs-list" v-if="logs.length">
+            <div class="log-row" v-for="(log, idx) in logs" :key="idx">
+              <span class="log-ts">{{ formatTs(log.ts) }}</span>
+              <span class="log-level">{{ log.level }}</span>
+              <span class="log-scope">{{ log.scope }}</span>
+              <span class="log-message">{{ log.message }}</span>
+            </div>
+          </div>
+          <div class="logs-empty" v-else>
+            {{ getText('label_noLogs') }}
+          </div>
+        </div>
       </div>
     </div>
 
@@ -451,6 +484,8 @@ export default {
       clientAppInstalled: false,
       clientAppDownloadUrl: '',
       installGuideUrl: '',
+      logs: [],
+      logsLoading: false,
 
       options: {
         speechService: '',
@@ -588,6 +623,35 @@ export default {
 
     showContribute: async function () {
       await showContributePage();
+    },
+
+    fetchLogs: async function () {
+      this.logsLoading = true;
+      try {
+        const logs = await browser.runtime.sendMessage({id: 'getLogs'});
+        this.logs = Array.isArray(logs) ? logs.slice().reverse() : [];
+      } catch (err) {
+        this.logs = [];
+      } finally {
+        this.logsLoading = false;
+      }
+    },
+
+    clearLogs: async function () {
+      this.logsLoading = true;
+      try {
+        await browser.runtime.sendMessage({id: 'clearLogs'});
+        this.logs = [];
+      } catch (err) {
+      } finally {
+        this.logsLoading = false;
+      }
+    },
+
+    formatTs: function (ts) {
+      if (!ts) return '';
+      const d = new Date(ts);
+      return d.toLocaleString();
     }
   },
 
@@ -598,6 +662,7 @@ export default {
     ]);
 
     this.setup();
+    this.fetchLogs();
   }
 };
 </script>
@@ -622,6 +687,49 @@ export default {
   font-weight: 500;
   letter-spacing: 0.25px;
   line-height: 32px;
+}
+
+.logs {
+  width: 100%;
+}
+
+.logs-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #1118270d;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.log-row {
+  display: grid;
+  grid-template-columns: 180px 70px 120px 1fr;
+  gap: 8px;
+  font-size: 13px;
+  align-items: center;
+}
+
+.log-level {
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.log-message {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logs-empty {
+  color: #6b7280;
+  font-size: 13px;
 }
 
 .section-desc {

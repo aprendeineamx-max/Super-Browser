@@ -250,6 +250,18 @@
     "message": "Fraction of log entries to emit (1 = all)",
     "description": "Description of the option."
   },
+  "buttonLabel_refreshLogs": {
+    "message": "Refresh logs",
+    "description": "Label of the button."
+  },
+  "buttonLabel_clearLogs": {
+    "message": "Clear logs",
+    "description": "Label of the button."
+  },
+  "label_noLogs": {
+    "message": "No logs yet",
+    "description": "Empty state label."
+  },
 
   "optionSectionTitle_client": {
     "message": "Client app",

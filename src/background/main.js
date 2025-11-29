@@ -49,7 +49,30 @@ import {createLogger} from 'utils/logger';
 import {registerDriver, transcribeWithFallback} from './stt/registry';
 
 let nativePort;
-const logger = createLogger('background', {level: logLevel});
+const logger = createLogger('background', {
+  level: logLevel,
+  onLog: entry => {
+    appendLog(entry);
+  }
+});
+
+async function appendLog(entry) {
+  try {
+    const {logEntries = []} = await storage.get('logEntries', {
+      area: 'session'
+    });
+    const next = logEntries.concat({
+      ...entry,
+      ts: Date.now()
+    });
+    await storage.set(
+      {logEntries: next.slice(-200)},
+      {area: 'session'}
+    );
+  } catch (err) {
+    // avoid recursive logging
+  }
+}
 
 async function syncLoggerConfig() {
   try {
@@ -1010,6 +1033,14 @@ async function processMessage(request, sender) {
       type: request.type,
       timeout: request.timeout
     });
+  } else if (request.id === 'getLogs') {
+    const {logEntries = []} = await storage.get('logEntries', {
+      area: 'session'
+    });
+    return logEntries;
+  } else if (request.id === 'clearLogs') {
+    await storage.set({logEntries: []}, {area: 'session'});
+    return [];
   } else if (request.id === 'captchaSolved') {
     await processAppUse();
   } else if (request.id === 'transcribeAudio') {
