@@ -47,6 +47,9 @@
     "lint": "eslint src embedded --ext .js,.vue",
     "test:e2e": "node tests/e2e/smoke.js",
     "test:all": "npm run lint && npm test && npm run build:prod:chrome && npm run test:e2e",
+    "setup:browser": "node embedded/scripts/install-browser.js",
+    "start:portable": "node embedded/scripts/launch-chrome.js",
+    "release:portable": "node embedded/scripts/build-release.js",
     "update": "ncu --dep prod,dev,peer --filterVersion '^*' --upgrade",
     "release": "commit-and-tag-version",
     "push": "git push --follow-tags origin main"
@@ -75,6 +78,8 @@
     "css-loader": "^7.1.2",
     "cssnano": "^7.0.1",
     "electron": "^39.2.4",
+    "archiver": "^7.0.1",
+    "@puppeteer/browsers": "^2.10.13",
     "fs-extra": "^11.2.0",
     "gulp": "^5.0.0",
     "gulp-htmlmin": "^5.0.1",

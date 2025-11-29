@@ -5,6 +5,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 const {spawn, execSync} = require('node:child_process');
+const {computeExecutablePath, BrowserPlatform} = require('@puppeteer/browsers');
 
 const DEFAULT_PATHS = [
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -12,12 +13,41 @@ const DEFAULT_PATHS = [
   path.join(process.env.LOCALAPPDATA || '', 'Google', 'Chrome', 'Application', 'chrome.exe')
 ];
 
+function resolveLocalBrowser() {
+  const binDir = path.join(__dirname, '..', 'bin');
+  const configPath = path.join(__dirname, '..', 'browser-config.json');
+  if (fs.existsSync(configPath)) {
+    try {
+      const cfg = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      const platform =
+        process.env.BROWSER_PLATFORM ||
+        BrowserPlatform[cfg.platform] ||
+        cfg.platform ||
+        'win64';
+      const execPath = computeExecutablePath({
+        cacheDir: binDir,
+        browser: cfg.browser || 'chrome',
+        buildId: cfg.revision,
+        platform
+      });
+      if (execPath && fs.existsSync(execPath)) {
+        return execPath;
+      }
+    } catch (err) {
+      console.warn('[buster-launcher] Failed to resolve local browser from config:', err.message);
+    }
+  }
+  return null;
+}
+
 const chromePath =
   process.env.CHROME_PATH ||
+  resolveLocalBrowser() ||
   DEFAULT_PATHS.find(p => p && fs.existsSync(p));
 
 if (!chromePath) {
   console.error('Chrome binary not found. Set CHROME_PATH env var.');
+  console.error('Tip: run npm run setup:browser to download the pinned Chromium.');
   process.exit(1);
 }
 
