@@ -63,7 +63,7 @@ Este documento define las reglas de juego para implementar las mejoras solicitad
 - Testing: ejecutar unit/smoke cuando esten disponibles; si no, documentar brechas y como correrlos.
 - Accesibilidad e i18n son obligatorios para nuevas pantallas/controles.
 - Para el subproyecto embebido, preferir CEF/JCEF para potencia; Electron como alternativa rapida; siempre exponer interfaz de automatizacion (CDP/WebSocket).
-- Al final de cada respuesta, incluye un bloque de texto listo para copiar/pegar con las indicaciones completas para continuar (lockfile, UI de logs/visores, metricas, pruebas, mejoras segun el documento rector, commit/push), de modo que el usuario solo responda “Ok” para que ejecutes todo.
+- Al final de cada respuesta, incluye un bloque de texto listo para copiar/pegar con las indicaciones completas y actualizadas para continuar (basado en el estado y sugerencias actuales, no un mensaje fijo), de modo que el usuario solo responda “Ok” para que ejecutes todo.
 
 ## Proximos entregables (concretos)
 - Esqueleto STT driver + fallback y metricas (background).
@@ -81,7 +81,7 @@ Este documento define las reglas de juego para implementar las mejoras solicitad
 - Pruebas minimas: retry/timeout, pipeline de drivers y hook de logger (node --test).
 
 ## Prompt de seguimiento (copiar/pegar)
-Usa este texto para indicarme que continue con todas las tareas pendientes y propuestas sin preguntar de nuevo:
+Usa un texto como este (ajustado al mensaje actual) para indicarme que continue con todas las tareas pendientes y propuestas sin preguntar de nuevo:
 
 ```
 Quiero que ejecutes todo lo siguiente sin pedirme confirmacion: actualiza dependencias/lockfile si hace falta, sigue con la UI de logs/visores (filtros, descarga, metricas), añade pruebas automatizadas y valida que todo funciona. Si detectas mas mejoras segun el documento rector, implementalas tambien. Al terminar, haz commit y push al remoto principal. Respondeme solo con “Ok” para continuar y luego haz todo.
