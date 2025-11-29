@@ -645,6 +645,7 @@ import {toRaw} from 'vue';
 import {App, Button, Icon, Select, Switch, TextField} from 'vueton';
 
 import storage from 'storage/storage';
+import {sendMessage} from 'utils/browser-client';
 import {getListItems, showContributePage, pingClientApp} from 'utils/app';
 import {getText} from 'utils/common';
 import {enableContributions, clientAppVersion} from 'utils/config';
@@ -993,7 +994,7 @@ export default {
     fetchLogs: async function () {
       this.logsLoading = true;
       try {
-        const logs = await browser.runtime.sendMessage({id: 'getLogs'});
+        const logs = await sendMessage(null, {id: 'getLogs'});
         this.logs = Array.isArray(logs) ? logs.slice().reverse() : [];
       } catch (err) {
         this.logs = [];
@@ -1005,7 +1006,7 @@ export default {
     clearLogs: async function () {
       this.logsLoading = true;
       try {
-        await browser.runtime.sendMessage({id: 'clearLogs'});
+        await sendMessage(null, {id: 'clearLogs'});
         this.logs = [];
       } catch (err) {
       } finally {
@@ -1016,7 +1017,7 @@ export default {
     fetchMetrics: async function () {
       this.metricsLoading = true;
       try {
-        const metrics = await browser.runtime.sendMessage({id: 'getSttMetrics'});
+        const metrics = await sendMessage(null, {id: 'getSttMetrics'});
         this.sttMetrics = metrics || {};
       } catch (err) {
         this.sttMetrics = {};
@@ -1028,7 +1029,7 @@ export default {
     clearMetrics: async function () {
       this.metricsLoading = true;
       try {
-        await browser.runtime.sendMessage({id: 'clearSttMetrics'});
+        await sendMessage(null, {id: 'clearSttMetrics'});
         this.sttMetrics = {};
       } catch (err) {
       } finally {

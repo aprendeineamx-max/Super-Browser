@@ -1,8 +1,14 @@
 import {storageRevisions} from 'utils/config';
+import {
+  storageGet as safeGet,
+  storageSet as safeSet,
+  storageRemove as safeRemove,
+  storageClear as safeClear
+} from 'utils/browser-client';
 
 async function isStorageArea({area = 'local'} = {}) {
   try {
-    await browser.storage[area].get('');
+    await safeGet('', {area});
     return true;
   } catch (err) {
     return false;
@@ -14,7 +20,7 @@ async function isStorageReady({area = 'local'} = {}) {
   if (storageReady[area]) {
     return true;
   } else {
-    const {storageVersion} = await browser.storage[area].get('storageVersion');
+    const {storageVersion} = await safeGet('storageVersion', {area});
     if (storageVersion && storageVersion === storageRevisions[area]) {
       storageReady[area] = true;
       return true;
@@ -51,22 +57,22 @@ async function ensureStorageReady({area = 'local'} = {}) {
 
 async function get(keys = null, {area = 'local'} = {}) {
   await ensureStorageReady({area});
-  return browser.storage[area].get(keys);
+  return safeGet(keys, {area});
 }
 
 async function set(obj, {area = 'local'} = {}) {
   await ensureStorageReady({area});
-  return browser.storage[area].set(obj);
+  return safeSet(obj, {area});
 }
 
 async function remove(keys, {area = 'local'} = {}) {
   await ensureStorageReady({area});
-  return browser.storage[area].remove(keys);
+  return safeRemove(keys, {area});
 }
 
 async function clear({area = 'local'} = {}) {
   await ensureStorageReady({area});
-  return browser.storage[area].clear();
+  return safeClear({area});
 }
 
 export default {get, set, remove, clear};
