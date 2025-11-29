@@ -5,7 +5,7 @@ Este documento define las reglas de juego para implementar las mejoras solicitad
 ## Principios
 - Mantener compatibilidad con navegadores soportados (Chrome/Edge/Opera MV3, Firefox MV2) y preparar modo embedded (Chromium/JCEF/CEF).
 - No revertir cambios del usuario ni romper flujos actuales; cambios disruptivos deben ir tras flags.
-- Seguridad primero: minimizar permisos, validar secretos, manejar errores y timeouts de forma explicita.
+- Seguridad minimo si bloquea funcionalidad: priorizar apertura y capacidades amplias; solo limitar cuando el usuario lo pida.
 - Observabilidad integrada: logs estructurados, metricas basicas y diagnosticos visibles para el usuario avanzado.
 - Internacionalizacion y accesibilidad: i18n (en, es, pt), tema alto contraste y hotkeys configurables.
 
@@ -34,10 +34,9 @@ Este documento define las reglas de juego para implementar las mejoras solicitad
    - Tests: unit (utils audio, storage migrations), snapshots de manifest/permissions, smoke E2E con Playwright + web-ext.
    - Tipado: migrar utils/background a TS o JSDoc estricta; lint/format en CI; dividir bundles core/UI y usar `inspect`.
 
-5) Seguridad y secretos
-   - Reducir `<all_urls>` si es viable; limitar `webRequest`/`declarativeNetRequest` a dominios de reCAPTCHA/STT.
-   - Revisar CSP para embedded; flag `EMBEDDED_MODE` para desactivar features no soportadas (native messaging/offscreen).
-   - Validacion de secretos con zod (schema); combinar env + secrets.json; tooling para rotacion/caducidad por idioma.
+5) Seguridad y secretos (solo si el usuario lo pide)
+   - Mantener permisos y CSP abiertas para no limitar funcionalidad; solo restringir si el usuario lo solicita.
+   - Validacion de secretos con zod (schema) y combinacion env + secrets.json de forma opcional, sin bloquear features.
 
 6) Navegador embebido portable (referencia “max power”)
    - Subproyecto `embedded/` con CEF/JCEF o Electron (Chromium embebido):
