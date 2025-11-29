@@ -19,6 +19,10 @@ const EXT_PATH =
   process.env.BUSTER_EXT_PATH ||
   path.join(__dirname, '..', 'dist', 'chrome'); // assumes npm run build:prod:chrome
 
+const PROFILE_PATH =
+  process.env.BUSTER_PROFILE_PATH ||
+  path.join(__dirname, '..', 'profiles', 'electron');
+
 async function createWindow() {
   // Load extension
   await session.defaultSession.loadExtension(EXT_PATH, {

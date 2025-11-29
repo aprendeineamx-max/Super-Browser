@@ -7,10 +7,13 @@ const {chromium} = require('playwright-chromium');
 const EXT_PATH =
   process.env.BUSTER_EXT_PATH ||
   path.join(__dirname, '..', 'dist', 'chrome'); // assumes npm run build:prod:chrome
+const PROFILE_PATH =
+  process.env.BUSTER_PROFILE_PATH ||
+  path.join(__dirname, 'profiles', 'tmp');
 
 async function main() {
   const context = await chromium.launchPersistentContext(
-    path.join(__dirname, 'profiles', 'tmp'),
+    PROFILE_PATH,
     {
       headless: false,
       args: [

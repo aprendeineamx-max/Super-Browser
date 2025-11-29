@@ -32,6 +32,7 @@
     "embedded:electron": "npx electron embedded/electron/main.js",
     "embedded:playwright": "node embedded/playwright/run.js",
     "embedded:playwright:smoke": "node embedded/playwright/smoke.js",
+    "embedded:clean-profiles": "node embedded/scripts/clean-profiles.js",
     "inspect": "cross-env NODE_ENV=production gulp inspect",
     "test": "cross-env BABEL_ENV=test NODE_PATH=./src node --test --require @babel/register",
     "update": "ncu --dep prod,dev,peer --filterVersion '^*' --upgrade",

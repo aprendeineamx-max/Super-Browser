@@ -9,9 +9,12 @@ async function main() {
   const extPath =
     process.env.BUSTER_EXT_PATH ||
     path.join(__dirname, '..', 'dist', 'chrome');
+  const profilePath =
+    process.env.BUSTER_PROFILE_PATH ||
+    path.join(__dirname, 'profiles', 'smoke');
 
   const context = await chromium.launchPersistentContext(
-    path.join(__dirname, 'profiles', 'smoke'),
+    profilePath,
     {
       headless: true,
       args: [
