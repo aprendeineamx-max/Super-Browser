@@ -420,7 +420,8 @@
           <div class="metrics-table" v-if="metricsTable.length">
             <div class="metrics-row metrics-head">
               <span>Driver</span><span>OK</span><span>Fail</span
-              ><span>Avg (ms)</span><span>{{ getText('tableHeader_successRate') }}</span>
+              ><span>Avg (ms)</span
+              ><span>{{ getText('tableHeader_successRate') }}</span>
             </div>
             <div
               class="metrics-row"
@@ -431,7 +432,15 @@
               <span>{{ item.ok }}</span>
               <span>{{ item.fail }}</span>
               <span>{{ item.avgMs }}</span>
-              <span>{{ item.successRate }}%</span>
+              <span class="metric-rate">
+                <span class="rate-text">{{ item.successRate }}%</span>
+                <span class="rate-bar">
+                  <span
+                    class="rate-fill"
+                    :style="{width: `${Math.min(item.successRate, 100)}%`}"
+                  ></span>
+                </span>
+              </span>
             </div>
           </div>
           <div class="logs-empty" v-else>
@@ -729,13 +738,17 @@ export default {
         });
     },
 
-    logScopeItems: function () {
-      const scopes = Array.from(
-        new Set((this.logs || []).map(log => log.scope).filter(Boolean))
-      ).sort();
-      return [{value: 'all', title: 'all'}].concat(
-        scopes.map(s => ({value: s, title: s}))
-      );
+      logScopeItems: function () {
+        const scopes = Array.from(
+          new Set((this.logs || []).map(log => log.scope).filter(Boolean))
+        ).sort();
+        return [{value: 'all', title: 'all'}].concat(
+          scopes.map(s => ({value: s, title: s}))
+        );
+    },
+
+    logPageSizeItems: function () {
+      return [10, 25, 50, 100].map(v => ({value: v, title: v.toString()}));
     },
 
     pagedLogs: function () {
@@ -1060,6 +1073,41 @@ export default {
 .metrics-head {
   font-weight: 600;
   text-transform: uppercase;
+}
+
+.metric-rate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rate-text {
+  width: 48px;
+}
+
+.rate-bar {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.rate-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+[data-theme='highContrast'] .rate-bar {
+  background: #1f2937;
+}
+
+[data-theme='highContrast'] .rate-fill {
+  background: linear-gradient(90deg, #34d399, #22c55e);
 }
 
 .logs-actions {

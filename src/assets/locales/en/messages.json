@@ -270,6 +270,30 @@
     "message": "To date",
     "description": "Title of the option."
   },
+  "optionTitle_logPageSize": {
+    "message": "Logs per page",
+    "description": "Title of the option."
+  },
+  "label_logsTotal": {
+    "message": "Total logs",
+    "description": "Label of the summary."
+  },
+  "buttonLabel_prevPage": {
+    "message": "Prev",
+    "description": "Label of the button."
+  },
+  "buttonLabel_nextPage": {
+    "message": "Next",
+    "description": "Label of the button."
+  },
+  "optionTitle_logDateFrom": {
+    "message": "From date",
+    "description": "Title of the option."
+  },
+  "optionTitle_logDateTo": {
+    "message": "To date",
+    "description": "Title of the option."
+  },
   "optionTitle_sttMetrics": {
     "message": "STT metrics",
     "description": "Title of the option."

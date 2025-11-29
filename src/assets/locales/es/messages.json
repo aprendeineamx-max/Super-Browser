@@ -270,6 +270,30 @@
     "message": "Hasta fecha",
     "description": "Title of the option."
   },
+  "optionTitle_logPageSize": {
+    "message": "Logs por página",
+    "description": "Title of the option."
+  },
+  "label_logsTotal": {
+    "message": "Total de logs",
+    "description": "Label of the summary."
+  },
+  "buttonLabel_prevPage": {
+    "message": "Anterior",
+    "description": "Label of the button."
+  },
+  "buttonLabel_nextPage": {
+    "message": "Siguiente",
+    "description": "Label of the button."
+  },
+  "optionTitle_logDateFrom": {
+    "message": "Desde fecha",
+    "description": "Title of the option."
+  },
+  "optionTitle_logDateTo": {
+    "message": "Hasta fecha",
+    "description": "Title of the option."
+  },
   "optionTitle_sttMetrics": {
     "message": "Métricas STT",
     "description": "Title of the option."
