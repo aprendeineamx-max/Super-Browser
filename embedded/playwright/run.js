@@ -36,7 +36,10 @@ async function main() {
   page.on('console', msg => console.log('[console]', msg.type(), msg.text()));
   page.on('pageerror', err => console.log('[pageerror]', err.message));
   console.log('Loading demo with extension:', EXT_PATH);
-  await page.goto('https://www.google.com/recaptcha/api2/demo');
+  // Alternate site that hosts recaptcha demo without extra blockers.
+  await page.goto('https://patrickhlauke.github.io/recaptcha/', {
+    waitUntil: 'domcontentloaded'
+  });
 
   console.log('Playwright launched with extension. Profile:', PROFILE_PATH);
   await new Promise(() => {});

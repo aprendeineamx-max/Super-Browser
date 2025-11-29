@@ -1,5 +1,6 @@
 // Launches local Chrome with the extension, using provided profile (for cookies/sessions).
 // Usage: CHROME_PATH=<path-to-chrome> node embedded/scripts/launch-chrome.js
+// Optional: BUSTER_EXT_PATH, BUSTER_PROFILE_PATH, BUSTER_TARGET (URL to open).
 const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -28,15 +29,23 @@ const profilePath =
   process.env.BUSTER_PROFILE_PATH ||
   fs.mkdtempSync(path.join(os.tmpdir(), 'buster-chrome-'));
 
+const targetUrl =
+  process.env.BUSTER_TARGET || 'https://patrickhlauke.github.io/recaptcha/';
+
 const args = [
   `--disable-extensions-except=${extPath}`,
   `--load-extension=${extPath}`,
   `--user-data-dir=${profilePath}`,
-  'about:blank'
+  '--no-first-run',
+  '--no-default-browser-check',
+  '--disable-popup-blocking',
+  '--disable-features=IsolateOrigins,site-per-process',
+  targetUrl
 ];
 
 console.log('Launching Chrome with extension:', extPath);
 console.log('Profile:', profilePath);
+console.log('Target URL:', targetUrl);
 const child = spawn(chromePath, args, {stdio: 'inherit'});
 
 child.on('exit', code => {

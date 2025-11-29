@@ -24,7 +24,7 @@
     "<all_urls>"
   ],
 
-  "content_security_policy": "default-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline' https: data: blob:; img-src * data: blob:; connect-src *; object-src 'self'; frame-ancestors *;",
+  "content_security_policy": "default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; style-src 'self' 'unsafe-inline' data: blob:; img-src * data: blob:; connect-src *; object-src 'self'; frame-ancestors *;",
 
   "icons": {
     "16": "src/assets/icons/app/icon-16.png",
