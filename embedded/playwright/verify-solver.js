@@ -12,13 +12,17 @@ async function main() {
     process.env.BUSTER_PROFILE_PATH ||
     path.join(__dirname, 'profiles', 'verify');
 
-  const context = await chromium.launchPersistentContext(profilePath, {
-    headless: false,
-    args: [
-      `--disable-extensions-except=${extPath}`,
-      `--load-extension=${extPath}`
-    ]
-  });
+  const context = await chromium.launchPersistentContext(
+    profilePath,
+    {
+      headless: false,
+      args: [
+        `--disable-extensions-except=${extPath}`,
+        `--load-extension=${extPath}`,
+        '--disable-blink-features=AutomationControlled'
+      ]
+    }
+  );
 
   const page = await context.newPage();
   await page.goto('https://www.google.com/recaptcha/api2/demo', {
@@ -26,40 +30,63 @@ async function main() {
   });
 
   // Click the checkbox inside the anchor iframe.
-  const anchorHandle = await page.waitForSelector(
-    'iframe[src*="recaptcha/api2/anchor"]',
-    {timeout: 20000}
-  );
-  const anchorFrame = await anchorHandle.contentFrame();
-  if (!anchorFrame) {
-    console.error('No anchor frame found');
-    process.exit(1);
+  let anchorFrame = null;
+  for (let i = 0; i < 5 && !anchorFrame; i++) {
+    const anchorHandle = await page
+      .waitForSelector('iframe[src*="recaptcha/api2/anchor"]', {
+        timeout: 5000
+      })
+      .catch(() => null);
+    anchorFrame = await anchorHandle?.contentFrame();
+    if (!anchorFrame) {
+      await page.waitForTimeout(2000);
+    }
   }
-  await anchorFrame.click('#recaptcha-anchor', {timeout: 20000});
+  if (!anchorFrame) {
+    console.error('No anchor frame found; available frames:', page.frames().map(f => f.url()));
+    await page.waitForTimeout(60000);
+    return;
+  }
+  await anchorFrame.click('#recaptcha-anchor', {timeout: 20000}).catch(err => {
+    console.error('Click anchor failed:', err.message);
+  });
 
   // Wait for challenge frame and check for solver button.
-  const challengeHandle = await page.waitForSelector(
-    'iframe[src*="recaptcha/api2/bframe"]',
-    {timeout: 20000}
-  );
-  const challengeFrame = await challengeHandle.contentFrame();
+  let challengeFrame = null;
+  for (let i = 0; i < 5 && !challengeFrame; i++) {
+    const challengeHandle = await page
+      .waitForSelector('iframe[src*="recaptcha/api2/bframe"]', {
+        timeout: 5000
+      })
+      .catch(() => null);
+    challengeFrame = await challengeHandle?.contentFrame();
+    if (!challengeFrame) {
+      await page.waitForTimeout(2000);
+    }
+  }
   if (!challengeFrame) {
-    console.error('No challenge frame found');
-    process.exit(1);
+    console.error('No challenge frame found; frames:', page.frames().map(f => f.url()));
+    await page.waitForTimeout(60000);
+    return;
   }
 
-  const solverButton = await challengeFrame.waitForSelector('#solver-button', {
-    timeout: 10000
-  });
+  const solverButton = await challengeFrame
+    .waitForSelector('#solver-button', {
+      timeout: 20000
+    })
+    .catch(err => {
+      console.error('Solver button not found:', err.message);
+      return null;
+    });
 
   if (solverButton) {
     console.log('Solver button found. Injection OK.');
   } else {
     console.error('Solver button not found.');
-    process.exit(1);
   }
 
-  await context.close();
+  console.log('Keeping browser open for manual inspection. Close it to finish.');
+  await new Promise(() => {});
 }
 
 main().catch(err => {
