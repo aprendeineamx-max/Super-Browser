@@ -250,12 +250,20 @@
     "message": "Fraction of log entries to emit (1 = all)",
     "description": "Description of the option."
   },
+  "optionTitle_logFilter": {
+    "message": "Filter by level",
+    "description": "Title of the option."
+  },
   "buttonLabel_refreshLogs": {
     "message": "Refresh logs",
     "description": "Label of the button."
   },
   "buttonLabel_clearLogs": {
     "message": "Clear logs",
+    "description": "Label of the button."
+  },
+  "buttonLabel_downloadLogs": {
+    "message": "Download logs",
     "description": "Label of the button."
   },
   "label_noLogs": {

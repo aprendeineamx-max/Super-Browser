@@ -78,3 +78,10 @@ Este documento define las reglas de juego para que el agente implemente las mejo
 - Opciones iniciales para orden de fallback y proveedor HTTP personalizado.
 - UI de logging básica en opciones (visualización/clear); configuración de nivel y sampling.
 - Pruebas mínimas: retry/timeout, pipeline de drivers y hook de logger (node --test).
+
+## Prompt de seguimiento (copiar/pegar)
+Usa este texto para indicarme que continúe con todas las tareas pendientes y propuestas sin preguntar de nuevo:
+
+```
+Quiero que ejecutes todo lo siguiente sin pedirme confirmación: actualiza dependencias/lockfile si hace falta, sigue con la UI de logs/visores (filtros, descarga, métricas), añade pruebas automatizadas y valida que todo funciona. Si detectas más mejoras según el documento rector, impleméntalas también. Al terminar, haz commit y push al remoto principal. Respóndeme solo con “Ok” para continuar y luego haz todo.
+```

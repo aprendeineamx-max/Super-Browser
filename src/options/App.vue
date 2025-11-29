@@ -317,6 +317,15 @@
           >
           </vn-text-field>
         </div>
+        <div class="option select">
+          <vn-select
+            :label="getText('optionTitle_logFilter')"
+            :items="listItems.logLevelFilter"
+            v-model="logLevelFilter"
+            transition="scale-transition"
+          >
+          </vn-select>
+        </div>
         <div class="option logs">
           <div class="logs-actions">
             <vn-button
@@ -337,9 +346,18 @@
               ><vn-icon icon="delete"></vn-icon>
               {{ getText('buttonLabel_clearLogs') }}</vn-button
             >
+            <vn-button
+              class="vn-icon--start"
+              :loading="logsLoading"
+              @click="downloadLogs"
+              variant="tonal"
+              size="small"
+              ><vn-icon icon="download"></vn-icon>
+              {{ getText('buttonLabel_downloadLogs') }}</vn-button
+            >
           </div>
-          <div class="logs-list" v-if="logs.length">
-            <div class="log-row" v-for="(log, idx) in logs" :key="idx">
+          <div class="logs-list" v-if="filteredLogs.length">
+            <div class="log-row" v-for="(log, idx) in filteredLogs" :key="idx">
               <span class="log-ts">{{ formatTs(log.ts) }}</span>
               <span class="log-level">{{ log.level }}</span>
               <span class="log-scope">{{ log.scope }}</span>
@@ -466,6 +484,13 @@ export default {
           {value: 'info', title: 'info'},
           {value: 'warn', title: 'warn'},
           {value: 'error', title: 'error'}
+        ],
+        logLevelFilter: [
+          {value: 'all', title: 'all'},
+          {value: 'debug', title: 'debug'},
+          {value: 'info', title: 'info'},
+          {value: 'warn', title: 'warn'},
+          {value: 'error', title: 'error'}
         ]
       },
 
@@ -486,6 +511,7 @@ export default {
       installGuideUrl: '',
       logs: [],
       logsLoading: false,
+      logLevelFilter: 'all',
 
       options: {
         speechService: '',
@@ -527,6 +553,13 @@ export default {
           : [];
         this.options.speechServiceOrder = next;
       }
+    },
+
+    filteredLogs: function () {
+      if (this.logLevelFilter === 'all') {
+        return this.logs;
+      }
+      return this.logs.filter(log => log.level === this.logLevelFilter);
     }
   },
 
@@ -646,6 +679,18 @@ export default {
       } finally {
         this.logsLoading = false;
       }
+    },
+
+    downloadLogs: function () {
+      const blob = new Blob([JSON.stringify(this.logs, null, 2)], {
+        type: 'application/json'
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `buster-logs-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
     },
 
     formatTs: function (ts) {
