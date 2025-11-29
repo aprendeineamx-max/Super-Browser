@@ -1,5 +1,5 @@
 <template>
-  <vn-app v-if="dataLoaded">
+  <vn-app v-if="dataLoaded" :class="{'high-contrast': isHighContrast}">
     <div class="section">
       <div class="section-title" v-once>
         {{ getText('optionSectionTitle_services') }}
@@ -149,7 +149,9 @@
       </div>
       <div class="option-wrap">
         <div class="option option-subtitle">
-          <div class="subsection-title">Gestión de proveedores STT</div>
+          <div class="subsection-title">
+            {{ getText('optionSubsection_sttProviders') }}
+          </div>
         </div>
         <div class="option text-field">
           <vn-text-field
@@ -223,32 +225,32 @@
     </div>
 
     <div class="section">
-      <div class="section-title">Comportamiento</div>
+      <div class="section-title">{{ getText('optionSectionTitle_behavior') }}</div>
       <div class="option-wrap">
         <div class="option">
           <vn-switch
-            label="Auto-resolver"
+            :label="getText('optionTitle_autoResolve')"
             v-model="options.autoResolveEnabled"
           ></vn-switch>
         </div>
         <div class="option text-field">
           <vn-text-field
-            label="Timeout del solver (ms)"
+            :label="getText('optionTitle_solverTimeout')"
             type="number"
             v-model.number="options.solverTimeoutMs"
           ></vn-text-field>
         </div>
         <div class="option text-field">
           <vn-text-field
-            label="Reintentos del solver"
+            :label="getText('optionTitle_solverRetryCount')"
             type="number"
             v-model.number="options.solverRetryCount"
           ></vn-text-field>
         </div>
         <div class="option text-field">
           <vn-text-field
-            label="Hotkey de activación manual"
-            hint="Ejemplo: Ctrl+Shift+L"
+            :label="getText('optionTitle_hotkey')"
+            :hint="getText('optionHint_hotkeyExample')"
             persistent-hint
             v-model.trim="options.hotkey"
           ></vn-text-field>
@@ -584,7 +586,7 @@
             {{ getText('label_noLogs') }}
           </div>
           <div class="logs-preview">
-            <div class="subsection-title">Visor rapido</div>
+            <div class="subsection-title">{{ getText('label_logsQuickView') }}</div>
             <div class="log-preview-box">
               <pre>{{ logsPreview }}</pre>
             </div>
@@ -778,6 +780,10 @@ export default {
   },
 
   computed: {
+    isHighContrast: function () {
+      return (this.options.appTheme || '') === 'highContrast';
+    },
+
     speechServiceOrderInput: {
       get() {
         return Array.isArray(this.options.speechServiceOrder)
@@ -796,7 +802,7 @@ export default {
       const sample = this.filteredLogs.slice(0, 10).map(log => {
         return `[${log.level || ''}] ${this.formatTs(log.ts)} ${log.scope || ''} :: ${log.message || ''}`;
       });
-      return sample.join('\n') || 'Sin logs cargados.';
+      return sample.join('\n') || getText('label_logsPreviewEmpty');
     },
 
     filteredLogs: function () {
@@ -930,6 +936,14 @@ export default {
 
       this.verifyClientApp();
 
+      this.applyHighContrastClass();
+      this.$watch(
+        'options.appTheme',
+        function () {
+          this.applyHighContrastClass();
+        }.bind(this)
+      );
+
       this.dataLoaded = true;
     },
 
@@ -961,6 +975,15 @@ export default {
       }
 
       this.clientAppVerified = true;
+    },
+
+    applyHighContrastClass: function () {
+      const cls = 'high-contrast';
+      if (this.isHighContrast) {
+        document.documentElement.classList.add(cls);
+      } else {
+        document.documentElement.classList.remove(cls);
+      }
     },
 
     setWitSpeechApiLangOptions: function () {
@@ -1307,6 +1330,36 @@ export default {
 .logs-empty {
   color: #6b7280;
   font-size: 13px;
+}
+
+.high-contrast,
+.high-contrast .v-application__wrap {
+  background: #000 !important;
+  color: #fff !important;
+}
+
+.high-contrast .section,
+.high-contrast .option,
+.high-contrast .logs-list,
+.high-contrast .metrics-table,
+.high-contrast .log-preview-box {
+  border: 2px solid #ffeb3b !important;
+  background: #000 !important;
+  color: #ffeb3b !important;
+}
+
+.high-contrast .section-title,
+.high-contrast .subsection-title,
+.high-contrast .log-level,
+.high-contrast .metrics-head {
+  color: #ffeb3b !important;
+}
+
+.high-contrast .vn-select,
+.high-contrast .vn-text-field,
+.high-contrast .vn-switch,
+.high-contrast .vn-button {
+  filter: contrast(1.2);
 }
 
 .logs-preview {

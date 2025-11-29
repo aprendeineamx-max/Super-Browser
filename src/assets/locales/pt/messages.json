@@ -21,6 +21,14 @@
     "message": "Logging",
     "description": "Title of the logging section."
   },
+  "optionSectionTitle_behavior": {
+    "message": "Comportamento",
+    "description": "Título da seção de comportamento."
+  },
+  "optionSubsection_sttProviders": {
+    "message": "Gestão de provedores STT",
+    "description": "Subtítulo para provedores STT."
+  },
 
   "optionTitle_speechService": {
     "message": "Speech recognition",
@@ -33,6 +41,26 @@
   "optionDescription_speechServiceOrder": {
     "message": "Example: googleSpeechApi,ibmSpeechApi,customHttp",
     "description": "Description of the option."
+  },
+  "optionTitle_autoResolve": {
+    "message": "Auto-resolver",
+    "description": "Alternar auto solver."
+  },
+  "optionTitle_solverTimeout": {
+    "message": "Timeout do solver (ms)",
+    "description": "Timeout para solver."
+  },
+  "optionTitle_solverRetryCount": {
+    "message": "Tentativas do solver",
+    "description": "Reintentos para solver."
+  },
+  "optionTitle_hotkey": {
+    "message": "Atalho de ativação manual",
+    "description": "Hotkey de ativação."
+  },
+  "optionHint_hotkeyExample": {
+    "message": "Exemplo: Ctrl+Shift+L",
+    "description": "Dica para hotkey."
   },
 
   "optionValue_speechService_googleSpeechApi": {
@@ -758,6 +786,14 @@
   "error_internalError": {
     "message": "Something went wrong. Open the browser console for more details.",
     "description": "Error message."
+  },
+  "label_logsQuickView": {
+    "message": "Visualização rápida de logs",
+    "description": "Título para visor rápido."
+  },
+  "label_logsPreviewEmpty": {
+    "message": "Nenhum log carregado.",
+    "description": "Estado vazio para visor rápido."
   }
 }
 

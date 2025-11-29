@@ -21,6 +21,14 @@
     "message": "Logging",
     "description": "Title of the logging section."
   },
+  "optionSectionTitle_behavior": {
+    "message": "Comportamiento",
+    "description": "Título de la sección de comportamiento."
+  },
+  "optionSubsection_sttProviders": {
+    "message": "Gestión de proveedores STT",
+    "description": "Subtítulo para proveedores STT."
+  },
 
   "optionTitle_speechService": {
     "message": "Speech recognition",
@@ -33,6 +41,26 @@
   "optionDescription_speechServiceOrder": {
     "message": "Example: googleSpeechApi,ibmSpeechApi,customHttp",
     "description": "Description of the option."
+  },
+  "optionTitle_autoResolve": {
+    "message": "Auto-resolver",
+    "description": "Alternar auto solver."
+  },
+  "optionTitle_solverTimeout": {
+    "message": "Timeout del solver (ms)",
+    "description": "Timeout para solver."
+  },
+  "optionTitle_solverRetryCount": {
+    "message": "Reintentos del solver",
+    "description": "Reintentos para solver."
+  },
+  "optionTitle_hotkey": {
+    "message": "Hotkey de activación manual",
+    "description": "Hotkey de activación."
+  },
+  "optionHint_hotkeyExample": {
+    "message": "Ejemplo: Ctrl+Shift+L",
+    "description": "Pista para hotkey."
   },
 
   "optionValue_speechService_googleSpeechApi": {
@@ -253,6 +281,14 @@
   "optionTitle_logFilter": {
     "message": "Filtrar por nivel",
     "description": "Title of the option."
+  },
+  "label_logsQuickView": {
+    "message": "Visor rápido de logs",
+    "description": "Título para visor rápido."
+  },
+  "label_logsPreviewEmpty": {
+    "message": "Sin logs cargados.",
+    "description": "Estado vacío para visor rápido."
   },
   "optionTitle_logScopeFilter": {
     "message": "Filtrar por scope",

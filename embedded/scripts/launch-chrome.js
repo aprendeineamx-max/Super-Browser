@@ -78,13 +78,15 @@ if (process.env.BUSTER_NO_AUTOMATION !== '1') {
 console.log('Launching Chrome with extension:', extPath);
 console.log('Profile:', profilePath);
 console.log('Target URL:', targetUrl);
-const child = spawn(chromePath, args, {stdio: 'inherit'});
-
-child.on('exit', code => {
-  console.log(`[buster-launcher] Chrome exited with code ${code}`);
+const child = spawn(chromePath, args, {
+  stdio: 'inherit',
+  detached: true
 });
 
 console.log(`[buster-launcher] Navegador lanzado y esperando en PID: ${child.pid}`);
+
+child.unref();
+
 // Mantén el proceso vivo hasta que se envíe SIGINT/CTRL+C, para inspección manual.
 const keepAlive = setInterval(() => {}, 1 << 30);
 
