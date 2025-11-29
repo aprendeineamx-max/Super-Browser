@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.5.0](https://github.com/aprendeineamx-max/Super-Browser/releases/tag/v0.5.0) (2025-11-29)
+
+### Added
+- UI avanzada con i18n (en/es/pt), tema alto contraste, hotkeys, auto-resolver, visor de logs y métricas.
+- Wrapper `browser.*` con retry/backoff y logger; sync de opciones on-change.
+- Auto-resolver en content script con detección y disparo automático; manejo de errores en botón.
+- CI: lint, unit, build; smoke Playwright local.
+- Portable: blueprint de navegador, instalador de binario, launcher con fallback local y release zip.
+
+### Changed
+- Manifiestos y package.json versionados a 0.5.0 (beta funcional).
+
 ## [3.1.0](https://github.com/aprendeineamx-max/Buster-Captcha-Extension/compare/v3.0.0...v3.1.0) (2024-06-04)
 
 

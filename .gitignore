@@ -4,6 +4,7 @@
 /dist/
 /embedded/dist/
 /embedded/bin/
+/embedded/releases/
 
 /secrets.json
 
