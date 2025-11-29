@@ -317,6 +317,13 @@
           >
           </vn-text-field>
         </div>
+        <div class="option text-field">
+          <vn-text-field
+            :label="getText('optionTitle_logSearch')"
+            v-model.trim="logSearch"
+          >
+          </vn-text-field>
+        </div>
         <div class="option select">
           <vn-select
             :label="getText('optionTitle_logFilter')"
@@ -553,6 +560,7 @@ export default {
       logs: [],
       logsLoading: false,
       logLevelFilter: 'all',
+      logSearch: '',
       sttMetrics: {},
       metricsLoading: false,
 
@@ -599,10 +607,18 @@ export default {
     },
 
     filteredLogs: function () {
-      if (this.logLevelFilter === 'all') {
-        return this.logs;
-      }
-      return this.logs.filter(log => log.level === this.logLevelFilter);
+      return (this.logs || [])
+        .filter(log =>
+          this.logLevelFilter === 'all' ? true : log.level === this.logLevelFilter
+        )
+        .filter(log => {
+          if (!this.logSearch) return true;
+          const q = this.logSearch.toLowerCase();
+          return (
+            (log.scope || '').toLowerCase().includes(q) ||
+            (log.message || '').toLowerCase().includes(q)
+          );
+        });
     },
 
     metricsTable: function () {

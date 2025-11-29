@@ -254,6 +254,10 @@
     "message": "Filter by level",
     "description": "Title of the option."
   },
+  "optionTitle_logSearch": {
+    "message": "Search logs",
+    "description": "Title of the option."
+  },
   "optionTitle_sttMetrics": {
     "message": "STT metrics",
     "description": "Title of the option."
