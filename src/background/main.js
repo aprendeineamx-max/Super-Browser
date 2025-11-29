@@ -1041,6 +1041,14 @@ async function processMessage(request, sender) {
   } else if (request.id === 'clearLogs') {
     await storage.set({logEntries: []}, {area: 'session'});
     return [];
+  } else if (request.id === 'getSttMetrics') {
+    const {sttMetrics = {}} = await storage.get('sttMetrics', {
+      area: 'session'
+    });
+    return sttMetrics;
+  } else if (request.id === 'clearSttMetrics') {
+    await storage.set({sttMetrics: {}}, {area: 'session'});
+    return {};
   } else if (request.id === 'captchaSolved') {
     await processAppUse();
   } else if (request.id === 'transcribeAudio') {

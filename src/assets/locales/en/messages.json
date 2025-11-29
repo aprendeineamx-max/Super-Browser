@@ -254,6 +254,22 @@
     "message": "Filter by level",
     "description": "Title of the option."
   },
+  "optionTitle_sttMetrics": {
+    "message": "STT metrics",
+    "description": "Title of the option."
+  },
+  "buttonLabel_refreshMetrics": {
+    "message": "Refresh metrics",
+    "description": "Label of the button."
+  },
+  "buttonLabel_clearMetrics": {
+    "message": "Clear metrics",
+    "description": "Label of the button."
+  },
+  "label_noMetrics": {
+    "message": "No metrics yet",
+    "description": "Empty state label."
+  },
   "buttonLabel_refreshLogs": {
     "message": "Refresh logs",
     "description": "Label of the button."

@@ -326,6 +326,47 @@
           >
           </vn-select>
         </div>
+        <div class="option metrics">
+          <div class="metrics-actions">
+            <vn-button
+              class="vn-icon--start"
+              :loading="metricsLoading"
+              @click="fetchMetrics"
+              variant="tonal"
+              size="small"
+              ><vn-icon icon="refresh"></vn-icon>
+              {{ getText('buttonLabel_refreshMetrics') }}</vn-button
+            >
+            <vn-button
+              class="vn-icon--start"
+              :loading="metricsLoading"
+              @click="clearMetrics"
+              variant="tonal"
+              size="small"
+              ><vn-icon icon="delete"></vn-icon>
+              {{ getText('buttonLabel_clearMetrics') }}</vn-button
+            >
+          </div>
+          <div class="metrics-table" v-if="metricsTable.length">
+            <div class="metrics-row metrics-head">
+              <span>Driver</span><span>OK</span><span>Fail</span
+              ><span>Avg (ms)</span>
+            </div>
+            <div
+              class="metrics-row"
+              v-for="item in metricsTable"
+              :key="item.driver"
+            >
+              <span>{{ item.driver }}</span>
+              <span>{{ item.ok }}</span>
+              <span>{{ item.fail }}</span>
+              <span>{{ item.avgMs }}</span>
+            </div>
+          </div>
+          <div class="logs-empty" v-else>
+            {{ getText('label_noMetrics') }}
+          </div>
+        </div>
         <div class="option logs">
           <div class="logs-actions">
             <vn-button
@@ -512,6 +553,8 @@ export default {
       logs: [],
       logsLoading: false,
       logLevelFilter: 'all',
+      sttMetrics: {},
+      metricsLoading: false,
 
       options: {
         speechService: '',
@@ -560,6 +603,15 @@ export default {
         return this.logs;
       }
       return this.logs.filter(log => log.level === this.logLevelFilter);
+    },
+
+    metricsTable: function () {
+      return Object.entries(this.sttMetrics || {}).map(([driver, stats]) => ({
+        driver,
+        ok: stats.ok || 0,
+        fail: stats.fail || 0,
+        avgMs: stats.avgMs || 0
+      }));
     }
   },
 
@@ -681,6 +733,29 @@ export default {
       }
     },
 
+    fetchMetrics: async function () {
+      this.metricsLoading = true;
+      try {
+        const metrics = await browser.runtime.sendMessage({id: 'getSttMetrics'});
+        this.sttMetrics = metrics || {};
+      } catch (err) {
+        this.sttMetrics = {};
+      } finally {
+        this.metricsLoading = false;
+      }
+    },
+
+    clearMetrics: async function () {
+      this.metricsLoading = true;
+      try {
+        await browser.runtime.sendMessage({id: 'clearSttMetrics'});
+        this.sttMetrics = {};
+      } catch (err) {
+      } finally {
+        this.metricsLoading = false;
+      }
+    },
+
     downloadLogs: function () {
       const blob = new Blob([JSON.stringify(this.logs, null, 2)], {
         type: 'application/json'
@@ -708,6 +783,7 @@ export default {
 
     this.setup();
     this.fetchLogs();
+    this.fetchMetrics();
   }
 };
 </script>
@@ -738,6 +814,39 @@ export default {
   width: 100%;
 }
 
+.metrics {
+  width: 100%;
+}
+
+.metrics-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.metrics-table {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #1118270d;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.metrics-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 80px 100px;
+  gap: 8px;
+  font-size: 13px;
+  align-items: center;
+}
+
+.metrics-head {
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
 .logs-actions {
   display: flex;
   gap: 8px;
@@ -765,6 +874,19 @@ export default {
 .log-level {
   text-transform: uppercase;
   font-weight: 600;
+}
+
+.log-level.debug {
+  color: #2563eb;
+}
+.log-level.info {
+  color: #16a34a;
+}
+.log-level.warn {
+  color: #ca8a04;
+}
+.log-level.error {
+  color: #dc2626;
 }
 
 .log-message {
