@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Buster Embedded",
+  "version": "0.1.0",
+  "description": "Embedded build of Buster with open permissions for automation and testing.",
+  "default_locale": "en",
+  "host_permissions": ["<all_urls>"],
+  "permissions": [
+    "storage",
+    "notifications",
+    "webRequest",
+    "webNavigation",
+    "nativeMessaging",
+    "offscreen",
+    "scripting"
+  ],
+  "content_security_policy": {
+    "extension_pages": "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; connect-src *; object-src *; frame-ancestors *;"
+  },
+  "incognito": "split"
+}
