@@ -4,7 +4,7 @@
 const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
-const {spawn} = require('node:child_process');
+const {spawn, execSync} = require('node:child_process');
 
 const DEFAULT_PATHS = [
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -25,16 +25,29 @@ const extPath =
   process.env.BUSTER_EXT_PATH ||
   path.join(__dirname, '..', '..', 'dist', 'chrome');
 
-if (process.env.BUSTER_BUILD === '1') {
-  console.log('Building dist/chrome...');
+const manifestPath = path.join(extPath, 'manifest.json');
+
+function ensureBuild() {
+  if (process.env.BUSTER_BUILD === '1') {
+    console.log('[buster-launcher] Forcing build because BUSTER_BUILD=1');
+  } else if (fs.existsSync(manifestPath)) {
+    return;
+  } else {
+    console.log('[buster-launcher] manifest.json not found, triggering build...');
+  }
   const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  const result = spawn(npmCmd, ['run', 'build:prod:chrome'], {
-    stdio: 'inherit',
-    cwd: path.join(__dirname, '..', '..')
-  });
-  if (result.status !== 0) {
-    console.error('Build failed, cannot continue.');
-    process.exit(result.status || 1);
+  try {
+    execSync(`${npmCmd} run build:prod:chrome`, {
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..', '..')
+    });
+  } catch (err) {
+    console.error('[buster-launcher] Build failed:', err.message);
+    process.exit(1);
+  }
+  if (!fs.existsSync(manifestPath)) {
+    console.error('[buster-launcher] manifest.json still missing after build, aborting.');
+    process.exit(1);
   }
 }
 
@@ -44,6 +57,8 @@ const profilePath =
 
 const targetUrl =
   process.env.BUSTER_TARGET || 'https://patrickhlauke.github.io/recaptcha/';
+
+ensureBuild();
 
 const args = [
   `--disable-extensions-except=${extPath}`,
@@ -66,5 +81,15 @@ console.log('Target URL:', targetUrl);
 const child = spawn(chromePath, args, {stdio: 'inherit'});
 
 child.on('exit', code => {
-  console.log('Chrome exited with code', code);
+  console.log(`[buster-launcher] Chrome exited with code ${code}`);
+});
+
+console.log(`[buster-launcher] Navegador lanzado y esperando en PID: ${child.pid}`);
+// Mantén el proceso vivo hasta que se envíe SIGINT/CTRL+C, para inspección manual.
+const keepAlive = setInterval(() => {}, 1 << 30);
+
+process.on('SIGINT', () => {
+  clearInterval(keepAlive);
+  console.log('[buster-launcher] Terminando por SIGINT...');
+  process.exit(0);
 });
