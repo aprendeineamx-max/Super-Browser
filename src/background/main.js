@@ -37,9 +37,19 @@ import {
   captchaMicrosoftSpeechApiLangCodes,
   captchaWitSpeechApiLangCodes
 } from 'utils/data';
-import {targetEnv, clientAppVersion, mv3} from 'utils/config';
+import {
+  targetEnv,
+  clientAppVersion,
+  mv3,
+  embeddedMode,
+  advancedUi,
+  logLevel
+} from 'utils/config';
+import {createLogger} from 'utils/logger';
+import {registerDriver, transcribeWithFallback} from './stt/registry';
 
 let nativePort;
+const logger = createLogger('background', {level: logLevel});
 
 function getFrameClientPos(index) {
   let currentIndex = -1;
@@ -399,6 +409,264 @@ async function loadSecrets() {
   return data;
 }
 
+async function recordSttMetric({driverId, ok, durationMs}) {
+  try {
+    const key = 'sttMetrics';
+    const {sttMetrics = {}} = await storage.get(key, {area: 'session'});
+    const current = sttMetrics[driverId] || {ok: 0, fail: 0, avgMs: 0};
+
+    if (ok) {
+      current.ok += 1;
+    } else {
+      current.fail += 1;
+    }
+    // simple rolling average
+    current.avgMs = current.avgMs
+      ? Math.round((current.avgMs + durationMs) / 2)
+      : durationMs;
+
+    sttMetrics[driverId] = current;
+    await storage.set({sttMetrics}, {area: 'session'});
+  } catch (err) {
+    logger.debug('metric record failed', {driverId, error: err?.message});
+  }
+}
+
+const initSttDrivers = runOnce(registerSttDrivers);
+
+function registerSttDrivers() {
+  const witTranscribe = async ({lang, audioContent, tryEnglishSpeechModel}) => {
+    const language = captchaWitSpeechApiLangCodes[lang] || 'english';
+    const apiKey = await getWitSpeechApiKey('witSpeechApi', language);
+
+    if (!apiKey) {
+      showNotification({messageId: 'error_missingApiKey'});
+      return;
+    }
+
+    const result = await getWitSpeechApiResult(apiKey, audioContent);
+    if (result?.errorId) {
+      showNotification({
+        messageId: result.errorId,
+        timeout: result.errorTimeout
+      });
+      return;
+    }
+    let solution = result?.text;
+
+    if (!solution && language !== 'english' && tryEnglishSpeechModel) {
+      const englishKey = await getWitSpeechApiKey('witSpeechApi', 'english');
+      if (!englishKey) {
+        showNotification({messageId: 'error_missingApiKey'});
+        return;
+      }
+      const englishResult = await getWitSpeechApiResult(
+        englishKey,
+        audioContent
+      );
+      if (englishResult?.errorId) {
+        showNotification({
+          messageId: englishResult.errorId,
+          timeout: englishResult.errorTimeout
+        });
+        return;
+      }
+      solution = englishResult?.text;
+    }
+    return solution;
+  };
+
+  registerDriver('witSpeechApi', {
+    transcribe: witTranscribe,
+    timeoutMs: 20000
+  });
+  registerDriver('witSpeechApiDemo', {
+    transcribe: witTranscribe,
+    timeoutMs: 20000
+  });
+
+  registerDriver('googleSpeechApi', {
+    transcribe: async ({lang, audioContent, tryEnglishSpeechModel}) => {
+      const {googleSpeechApiKey: apiKey} =
+        await storage.get('googleSpeechApiKey');
+
+      if (!apiKey) {
+        showNotification({messageId: 'error_missingApiKey'});
+        return;
+      }
+
+      const language = captchaGoogleSpeechApiLangCodes[lang] || 'en-US';
+
+      return getGoogleSpeechApiResult(
+        apiKey,
+        audioContent,
+        language,
+        tryEnglishSpeechModel
+      );
+    },
+    timeoutMs: 20000
+  });
+
+  registerDriver('ibmSpeechApi', {
+    transcribe: async ({lang, audioContent, tryEnglishSpeechModel}) => {
+      const {ibmSpeechApiUrl: apiUrl, ibmSpeechApiKey: apiKey} =
+        await storage.get(['ibmSpeechApiUrl', 'ibmSpeechApiKey']);
+
+      if (!apiUrl) {
+        showNotification({messageId: 'error_missingApiUrl'});
+        return;
+      }
+      if (!apiKey) {
+        showNotification({messageId: 'error_missingApiKey'});
+        return;
+      }
+
+      const model = captchaIbmSpeechApiLangCodes[lang] || 'en-US_Multimedia';
+
+      let solution = await getIbmSpeechApiResult(
+        apiUrl,
+        apiKey,
+        audioContent,
+        model
+      );
+
+      if (
+        !solution &&
+        !['en-US_Multimedia', 'en-GB_Multimedia'].includes(model) &&
+        tryEnglishSpeechModel
+      ) {
+        solution = await getIbmSpeechApiResult(
+          apiUrl,
+          apiKey,
+          audioContent,
+          'en-US_Multimedia'
+        );
+      }
+      return solution;
+    },
+    timeoutMs: 20000
+  });
+
+  registerDriver('microsoftSpeechApi', {
+    transcribe: async ({lang, audioContent, tryEnglishSpeechModel}) => {
+      const {microsoftSpeechApiLoc: apiLocation, microsoftSpeechApiKey: apiKey} =
+        await storage.get(['microsoftSpeechApiLoc', 'microsoftSpeechApiKey']);
+
+      if (!apiKey) {
+        showNotification({messageId: 'error_missingApiKey'});
+        return;
+      }
+
+      const language = captchaMicrosoftSpeechApiLangCodes[lang] || 'en-US';
+
+      let solution = await getMicrosoftSpeechApiResult(
+        apiLocation,
+        apiKey,
+        audioContent,
+        language
+      );
+      if (
+        !solution &&
+        !['en-US', 'en-GB'].includes(language) &&
+        tryEnglishSpeechModel
+      ) {
+        solution = await getMicrosoftSpeechApiResult(
+          apiLocation,
+          apiKey,
+          audioContent,
+          'en-US'
+        );
+      }
+      return solution;
+    },
+    timeoutMs: 20000
+  });
+
+  registerDriver('customHttp', {
+    transcribe: async ({lang, audioContent, audioBase64}) => {
+      const {
+        customSpeechApiUrl: apiUrl,
+        customSpeechApiMethod: method = 'POST',
+        customSpeechApiHeaders: headersRaw,
+        customSpeechApiBodyTemplate: bodyTemplate = '',
+        customSpeechApiResponsePath: responsePath = ''
+      } = await storage.get([
+        'customSpeechApiUrl',
+        'customSpeechApiMethod',
+        'customSpeechApiHeaders',
+        'customSpeechApiBodyTemplate',
+        'customSpeechApiResponsePath'
+      ]);
+
+      if (!apiUrl) {
+        return;
+      }
+
+      let headers = {};
+      if (headersRaw) {
+        if (typeof headersRaw === 'string') {
+          try {
+            headers = JSON.parse(headersRaw);
+          } catch (err) {
+            headers = {};
+          }
+        } else if (typeof headersRaw === 'object') {
+          headers = headersRaw;
+        }
+      }
+
+      const audioString = audioBase64 || arrayBufferToBase64(audioContent);
+      const body =
+        bodyTemplate ||
+        JSON.stringify({audio: audioString, lang, format: 'wav'});
+
+      const rsp = await fetch(apiUrl, {
+        method,
+        headers,
+        body: body
+          .replace('{{audioBase64}}', audioString)
+          .replace('{{lang}}', lang),
+        credentials: 'omit'
+      });
+
+      if (!rsp.ok) {
+        throw new Error(`Custom STT response: ${rsp.status}`);
+      }
+
+      const contentType = rsp.headers.get('content-type') || '';
+      let data;
+      if (contentType.includes('application/json')) {
+        data = await rsp.json();
+      } else {
+        data = await rsp.text();
+      }
+
+      if (responsePath && typeof data === 'object') {
+        const parts = responsePath.split('.');
+        let node = data;
+        for (const key of parts) {
+          if (node && Object.prototype.hasOwnProperty.call(node, key)) {
+            node = node[key];
+          } else {
+            node = null;
+            break;
+          }
+        }
+        if (typeof node === 'string') {
+          return node.trim();
+        }
+      }
+
+      if (typeof data === 'string') {
+        return data.trim();
+      }
+
+      return null;
+    },
+    timeoutMs: 25000
+  });
+}
+
 async function getWitSpeechApiKey(speechService, language) {
   if (speechService === 'witSpeechApiDemo') {
     const secrets = await loadSecrets();
@@ -645,7 +913,7 @@ async function transcribeAudio(audioUrl, lang) {
   const audioOptions = {trimStart: 1.5, trimEnd: 1.5};
 
   let audioContent;
-  if (mv3 && !['firefox', 'safari'].includes(targetEnv)) {
+  if (mv3 && !['firefox', 'safari'].includes(targetEnv) && !embeddedMode) {
     await setupOffscreenDocument({
       url: '/src/offscreen/index.html',
       reasons: ['USER_MEDIA'],
@@ -667,125 +935,27 @@ async function transcribeAudio(audioUrl, lang) {
 
   let solution;
 
-  const {speechService, tryEnglishSpeechModel} = await storage.get([
-    'speechService',
-    'tryEnglishSpeechModel'
-  ]);
+  await initSttDrivers();
 
-  if (['witSpeechApiDemo', 'witSpeechApi'].includes(speechService)) {
-    const language = captchaWitSpeechApiLangCodes[lang] || 'english';
+  const {speechService, tryEnglishSpeechModel, speechServiceOrder} =
+    await storage.get(['speechService', 'tryEnglishSpeechModel', 'speechServiceOrder']);
 
-    const apiKey = await getWitSpeechApiKey(speechService, language);
+  const order =
+    Array.isArray(speechServiceOrder) && speechServiceOrder.length
+      ? speechServiceOrder
+      : [speechService];
 
-    if (!apiKey) {
-      showNotification({messageId: 'error_missingApiKey'});
-      return;
-    }
+  const audioBase64 = arrayBufferToBase64(audioContent);
 
-    const result = await getWitSpeechApiResult(apiKey, audioContent);
-    if (result.errorId) {
-      showNotification({
-        messageId: result.errorId,
-        timeout: result.errorTimeout
-      });
-      return;
-    }
-    solution = result.text;
-
-    if (!solution && language !== 'english' && tryEnglishSpeechModel) {
-      const apiKey = await getWitSpeechApiKey(speechService, 'english');
-
-      if (!apiKey) {
-        showNotification({messageId: 'error_missingApiKey'});
-        return;
-      }
-
-      const result = await getWitSpeechApiResult(apiKey, audioContent);
-      if (result.errorId) {
-        showNotification({
-          messageId: result.errorId,
-          timeout: result.errorTimeout
-        });
-        return;
-      }
-      solution = result.text;
-    }
-  } else if (speechService === 'googleSpeechApi') {
-    const {googleSpeechApiKey: apiKey} =
-      await storage.get('googleSpeechApiKey');
-
-    if (!apiKey) {
-      showNotification({messageId: 'error_missingApiKey'});
-      return;
-    }
-
-    const language = captchaGoogleSpeechApiLangCodes[lang] || 'en-US';
-
-    solution = await getGoogleSpeechApiResult(
-      apiKey,
-      audioContent,
-      language,
-      tryEnglishSpeechModel
-    );
-  } else if (speechService === 'ibmSpeechApi') {
-    const {ibmSpeechApiUrl: apiUrl, ibmSpeechApiKey: apiKey} =
-      await storage.get(['ibmSpeechApiUrl', 'ibmSpeechApiKey']);
-
-    if (!apiUrl) {
-      showNotification({messageId: 'error_missingApiUrl'});
-      return;
-    }
-    if (!apiKey) {
-      showNotification({messageId: 'error_missingApiKey'});
-      return;
-    }
-
-    const model = captchaIbmSpeechApiLangCodes[lang] || 'en-US_Multimedia';
-
-    solution = await getIbmSpeechApiResult(apiUrl, apiKey, audioContent, model);
-
-    if (
-      !solution &&
-      !['en-US_Multimedia', 'en-GB_Multimedia'].includes(model) &&
-      tryEnglishSpeechModel
-    ) {
-      solution = await getIbmSpeechApiResult(
-        apiUrl,
-        apiKey,
-        audioContent,
-        'en-US_Multimedia'
-      );
-    }
-  } else if (speechService === 'microsoftSpeechApi') {
-    const {microsoftSpeechApiLoc: apiLocaction, microsoftSpeechApiKey: apiKey} =
-      await storage.get(['microsoftSpeechApiLoc', 'microsoftSpeechApiKey']);
-
-    if (!apiKey) {
-      showNotification({messageId: 'error_missingApiKey'});
-      return;
-    }
-
-    const language = captchaMicrosoftSpeechApiLangCodes[lang] || 'en-US';
-
-    solution = await getMicrosoftSpeechApiResult(
-      apiLocaction,
-      apiKey,
-      audioContent,
-      language
-    );
-    if (
-      !solution &&
-      !['en-US', 'en-GB'].includes(language) &&
-      tryEnglishSpeechModel
-    ) {
-      solution = await getMicrosoftSpeechApiResult(
-        apiLocaction,
-        apiKey,
-        audioContent,
-        'en-US'
-      );
-    }
-  }
+  solution = await transcribeWithFallback({
+    order,
+    lang,
+    audioContent,
+    audioBase64,
+    tryEnglishSpeechModel,
+    logger,
+    onMetric: recordSttMetric
+  });
 
   if (!solution) {
     if (['witSpeechApiDemo', 'witSpeechApi'].includes(speechService)) {

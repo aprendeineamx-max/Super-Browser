@@ -31,7 +31,10 @@ const plugins = [
       STORAGE_REVISION_SESSION: JSON.stringify(storageRevisions.session.at(-1)),
       ENABLE_CONTRIBUTIONS: JSON.stringify(enableContributions.toString()),
       APP_VERSION: JSON.stringify(appVersion),
-      MV3: JSON.stringify(mv3.toString())
+      MV3: JSON.stringify(mv3.toString()),
+      EMBEDDED_MODE: JSON.stringify((process.env.EMBEDDED_MODE || 'false').toString()),
+      ADVANCED_UI: JSON.stringify((process.env.ADVANCED_UI || 'true').toString()),
+      LOG_LEVEL: JSON.stringify((process.env.LOG_LEVEL || 'info').toString())
     },
     __VUE_OPTIONS_API__: true,
     __VUE_PROD_DEVTOOLS__: false,
