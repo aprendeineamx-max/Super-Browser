@@ -259,24 +259,32 @@
     "description": "Title of the option."
   },
   "optionTitle_sttMetrics": {
-    "message": "STT metrics",
+    "message": "Métricas STT",
     "description": "Title of the option."
   },
   "buttonLabel_refreshMetrics": {
-    "message": "Refresh metrics",
+    "message": "Atualizar métricas",
     "description": "Label of the button."
   },
   "buttonLabel_clearMetrics": {
-    "message": "Clear metrics",
+    "message": "Limpar métricas",
     "description": "Label of the button."
   },
   "buttonLabel_downloadMetrics": {
-    "message": "Download metrics",
+    "message": "Baixar métricas",
+    "description": "Label of the button."
+  },
+  "buttonLabel_downloadMetricsCsv": {
+    "message": "Baixar métricas (CSV)",
     "description": "Label of the button."
   },
   "label_noMetrics": {
-    "message": "No metrics yet",
+    "message": "Sem métricas ainda",
     "description": "Empty state label."
+  },
+  "tableHeader_successRate": {
+    "message": "% sucesso",
+    "description": "Label of the table header."
   },
   "buttonLabel_refreshLogs": {
     "message": "Refresh logs",
@@ -287,7 +295,11 @@
     "description": "Label of the button."
   },
   "buttonLabel_downloadLogs": {
-    "message": "Download logs",
+    "message": "Baixar logs",
+    "description": "Label of the button."
+  },
+  "buttonLabel_downloadLogsCsv": {
+    "message": "Baixar logs (CSV)",
     "description": "Label of the button."
   },
   "label_noLogs": {

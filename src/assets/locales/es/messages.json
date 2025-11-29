@@ -251,32 +251,44 @@
     "description": "Description of the option."
   },
   "optionTitle_logFilter": {
-    "message": "Filter by level",
+    "message": "Filtrar por nivel",
+    "description": "Title of the option."
+  },
+  "optionTitle_logScopeFilter": {
+    "message": "Filtrar por scope",
     "description": "Title of the option."
   },
   "optionTitle_logSearch": {
-    "message": "Search logs",
+    "message": "Buscar en logs",
     "description": "Title of the option."
   },
   "optionTitle_sttMetrics": {
-    "message": "STT metrics",
+    "message": "Métricas STT",
     "description": "Title of the option."
   },
   "buttonLabel_refreshMetrics": {
-    "message": "Refresh metrics",
+    "message": "Refrescar métricas",
     "description": "Label of the button."
   },
   "buttonLabel_clearMetrics": {
-    "message": "Clear metrics",
+    "message": "Borrar métricas",
     "description": "Label of the button."
   },
   "buttonLabel_downloadMetrics": {
-    "message": "Download metrics",
+    "message": "Descargar métricas",
+    "description": "Label of the button."
+  },
+  "buttonLabel_downloadMetricsCsv": {
+    "message": "Descargar métricas (CSV)",
     "description": "Label of the button."
   },
   "label_noMetrics": {
-    "message": "No metrics yet",
+    "message": "Sin métricas aún",
     "description": "Empty state label."
+  },
+  "tableHeader_successRate": {
+    "message": "% éxito",
+    "description": "Label of the table header."
   },
   "buttonLabel_refreshLogs": {
     "message": "Refresh logs",
@@ -287,7 +299,11 @@
     "description": "Label of the button."
   },
   "buttonLabel_downloadLogs": {
-    "message": "Download logs",
+    "message": "Descargar logs",
+    "description": "Label of the button."
+  },
+  "buttonLabel_downloadLogsCsv": {
+    "message": "Descargar logs (CSV)",
     "description": "Label of the button."
   },
   "label_noLogs": {

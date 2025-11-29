@@ -254,6 +254,10 @@
     "message": "Filter by level",
     "description": "Title of the option."
   },
+  "optionTitle_logScopeFilter": {
+    "message": "Filter by scope",
+    "description": "Title of the option."
+  },
   "optionTitle_logSearch": {
     "message": "Search logs",
     "description": "Title of the option."
@@ -274,9 +278,17 @@
     "message": "Download metrics",
     "description": "Label of the button."
   },
+  "buttonLabel_downloadMetricsCsv": {
+    "message": "Download metrics (CSV)",
+    "description": "Label of the button."
+  },
   "label_noMetrics": {
     "message": "No metrics yet",
     "description": "Empty state label."
+  },
+  "tableHeader_successRate": {
+    "message": "Success %",
+    "description": "Label of the table header."
   },
   "buttonLabel_refreshLogs": {
     "message": "Refresh logs",
@@ -288,6 +300,10 @@
   },
   "buttonLabel_downloadLogs": {
     "message": "Download logs",
+    "description": "Label of the button."
+  },
+  "buttonLabel_downloadLogsCsv": {
+    "message": "Download logs (CSV)",
     "description": "Label of the button."
   },
   "label_noLogs": {

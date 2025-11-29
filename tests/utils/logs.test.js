@@ -24,3 +24,14 @@ test('filterLogs filters by search text', () => {
   assert.strictEqual(result.length, 1);
   assert.strictEqual(result[0].message, 'hello world');
 });
+
+test('filterLogs filters by scope', () => {
+  const logs = [
+    {level: 'info', message: 'a', scope: 'bg'},
+    {level: 'info', message: 'b', scope: 'content'}
+  ];
+
+  const result = filterLogs({logs, scope: 'content'});
+  assert.strictEqual(result.length, 1);
+  assert.strictEqual(result[0].message, 'b');
+});

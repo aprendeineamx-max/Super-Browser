@@ -333,6 +333,15 @@
           >
           </vn-select>
         </div>
+        <div class="option select">
+          <vn-select
+            :label="getText('optionTitle_logScopeFilter')"
+            :items="logScopeItems"
+            v-model="logScopeFilter"
+            transition="scale-transition"
+          >
+          </vn-select>
+        </div>
         <div class="option metrics">
           <div class="metrics-actions">
             <vn-button
@@ -362,11 +371,20 @@
               ><vn-icon icon="download"></vn-icon>
               {{ getText('buttonLabel_downloadMetrics') }}</vn-button
             >
+            <vn-button
+              class="vn-icon--start"
+              :loading="metricsLoading"
+              @click="downloadMetricsCsv"
+              variant="tonal"
+              size="small"
+              ><vn-icon icon="download"></vn-icon>
+              {{ getText('buttonLabel_downloadMetricsCsv') }}</vn-button
+            >
           </div>
           <div class="metrics-table" v-if="metricsTable.length">
             <div class="metrics-row metrics-head">
               <span>Driver</span><span>OK</span><span>Fail</span
-              ><span>Avg (ms)</span>
+              ><span>Avg (ms)</span><span>{{ getText('tableHeader_successRate') }}</span>
             </div>
             <div
               class="metrics-row"
@@ -377,6 +395,7 @@
               <span>{{ item.ok }}</span>
               <span>{{ item.fail }}</span>
               <span>{{ item.avgMs }}</span>
+              <span>{{ item.successRate }}%</span>
             </div>
           </div>
           <div class="logs-empty" v-else>
@@ -411,6 +430,15 @@
               size="small"
               ><vn-icon icon="download"></vn-icon>
               {{ getText('buttonLabel_downloadLogs') }}</vn-button
+            >
+            <vn-button
+              class="vn-icon--start"
+              :loading="logsLoading"
+              @click="downloadLogsCsv"
+              variant="tonal"
+              size="small"
+              ><vn-icon icon="download"></vn-icon>
+              {{ getText('buttonLabel_downloadLogsCsv') }}</vn-button
             >
           </div>
           <div class="logs-list" v-if="filteredLogs.length">
@@ -570,6 +598,7 @@ export default {
       logsLoading: false,
       logLevelFilter: 'all',
       logSearch: '',
+      logScopeFilter: 'all',
       sttMetrics: {},
       metricsLoading: false,
 
@@ -620,6 +649,9 @@ export default {
         .filter(log =>
           this.logLevelFilter === 'all' ? true : log.level === this.logLevelFilter
         )
+        .filter(log =>
+          this.logScopeFilter === 'all' ? true : log.scope === this.logScopeFilter
+        )
         .filter(log => {
           if (!this.logSearch) return true;
           const q = this.logSearch.toLowerCase();
@@ -628,6 +660,15 @@ export default {
             (log.message || '').toLowerCase().includes(q)
           );
         });
+    },
+
+    logScopeItems: function () {
+      const scopes = Array.from(
+        new Set((this.logs || []).map(log => log.scope).filter(Boolean))
+      ).sort();
+      return [{value: 'all', title: 'all'}].concat(
+        scopes.map(s => ({value: s, title: s}))
+      );
     },
 
     metricsTable: function () {
@@ -641,7 +682,12 @@ export default {
         })
       );
 
-      return rows.sort((a, b) => b.total - a.total);
+      return rows
+        .map(row => ({
+          ...row,
+          successRate: row.total ? Math.round((row.ok / row.total) * 100) : 0
+        }))
+        .sort((a, b) => b.total - a.total);
     }
   },
 
@@ -799,6 +845,26 @@ export default {
       URL.revokeObjectURL(url);
     },
 
+    downloadMetricsCsv: function () {
+      const rows = this.metricsTable;
+      const header = ['driver', 'ok', 'fail', 'avgMs', 'successRate'];
+      const lines = [header.join(',')].concat(
+        rows.map(
+          r =>
+            `${r.driver},${r.ok},${r.fail},${r.avgMs},${r.successRate}`
+        )
+      );
+      const blob = new Blob([lines.join('\n')], {
+        type: 'text/csv'
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `buster-metrics-${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    },
+
     downloadLogs: function () {
       const blob = new Blob([JSON.stringify(this.logs, null, 2)], {
         type: 'application/json'
@@ -807,6 +873,27 @@ export default {
       const a = document.createElement('a');
       a.href = url;
       a.download = `buster-logs-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    },
+
+    downloadLogsCsv: function () {
+      const rows = this.filteredLogs;
+      const header = ['ts', 'level', 'scope', 'message'];
+      const lines = [header.join(',')].concat(
+        rows.map(r => {
+          const msg = (r.message || '').replace(/"/g, '""');
+          const scope = (r.scope || '').replace(/"/g, '""');
+          return `${r.ts || ''},${r.level || ''},"${scope}","${msg}"`;
+        })
+      );
+      const blob = new Blob([lines.join('\n')], {
+        type: 'text/csv'
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `buster-logs-${Date.now()}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     },
