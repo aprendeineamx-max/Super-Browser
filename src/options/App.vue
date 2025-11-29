@@ -354,6 +354,30 @@
           >
           </vn-select>
         </div>
+        <div class="option select">
+          <vn-select
+            :label="getText('optionTitle_logPageSize')"
+            :items="logPageSizeItems"
+            v-model="logPageSize"
+            transition="scale-transition"
+          >
+          </vn-select>
+        </div>
+        <div class="option log-summary" v-if="filteredLogs.length">
+          <div class="summary-item">
+            <span>{{ getText('label_logsTotal') }}</span>
+            <strong>{{ logSummary.total }}</strong>
+          </div>
+          <div class="summary-item">
+            <span>info</span><strong>{{ logSummary.info || 0 }}</strong>
+          </div>
+          <div class="summary-item">
+            <span>warn</span><strong>{{ logSummary.warn || 0 }}</strong>
+          </div>
+          <div class="summary-item">
+            <span>error</span><strong>{{ logSummary.error || 0 }}</strong>
+          </div>
+        </div>
         <div class="option metrics">
           <div class="metrics-actions">
             <vn-button
@@ -454,11 +478,30 @@
             >
           </div>
           <div class="logs-list" v-if="filteredLogs.length">
-            <div class="log-row" v-for="(log, idx) in filteredLogs" :key="idx">
+            <div class="log-row" v-for="(log, idx) in pagedLogs" :key="idx">
               <span class="log-ts">{{ formatTs(log.ts) }}</span>
               <span class="log-level">{{ log.level }}</span>
               <span class="log-scope">{{ log.scope }}</span>
               <span class="log-message">{{ log.message }}</span>
+            </div>
+            <div class="logs-pagination">
+              <vn-button
+                :disabled="logPage === 1"
+                size="small"
+                variant="tonal"
+                @click="logPage = Math.max(1, logPage - 1)"
+                >{{ getText('buttonLabel_prevPage') }}</vn-button
+              >
+              <span class="logs-page-label">
+                {{ logPage }} / {{ logTotalPages }}
+              </span>
+              <vn-button
+                :disabled="logPage === logTotalPages"
+                size="small"
+                variant="tonal"
+                @click="logPage = Math.min(logTotalPages, logPage + 1)"
+                >{{ getText('buttonLabel_nextPage') }}</vn-button
+              >
             </div>
           </div>
           <div class="logs-empty" v-else>
@@ -611,6 +654,8 @@ export default {
       logLevelFilter: 'all',
       logSearch: '',
       logScopeFilter: 'all',
+      logPage: 1,
+      logPageSize: 25,
       logDateFrom: '',
       logDateTo: '',
       sttMetrics: {},
@@ -691,6 +736,24 @@ export default {
       return [{value: 'all', title: 'all'}].concat(
         scopes.map(s => ({value: s, title: s}))
       );
+    },
+
+    pagedLogs: function () {
+      const start = (this.logPage - 1) * this.logPageSize;
+      return this.filteredLogs.slice(start, start + this.logPageSize);
+    },
+
+    logTotalPages: function () {
+      return Math.max(1, Math.ceil(this.filteredLogs.length / this.logPageSize));
+    },
+
+    logSummary: function () {
+      const counts = {debug: 0, info: 0, warn: 0, error: 0, total: 0};
+      for (const log of this.filteredLogs) {
+        counts[log.level] = (counts[log.level] || 0) + 1;
+        counts.total += 1;
+      }
+      return counts;
     },
 
     metricsTable: function () {
