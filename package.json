@@ -29,6 +29,8 @@
     "build:prod:zip:opera": "cross-env TARGET_ENV=opera npm run _build:prod:zip",
     "start:chrome": "web-ext run -s dist/chrome -t chromium",
     "start:firefox": "web-ext run -s dist/firefox -t firefox-desktop",
+    "embedded:electron": "npx electron embedded/electron/main.js",
+    "embedded:playwright": "node embedded/playwright/run.js",
     "inspect": "cross-env NODE_ENV=production gulp inspect",
     "test": "cross-env BABEL_ENV=test NODE_PATH=./src node --test --require @babel/register",
     "update": "ncu --dep prod,dev,peer --filterVersion '^*' --upgrade",
