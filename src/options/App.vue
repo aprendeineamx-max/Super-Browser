@@ -255,6 +255,12 @@
             v-model.trim="options.hotkey"
           ></vn-text-field>
         </div>
+        <div class="option">
+          <vn-switch
+            :label="getText('optionTitle_humanMouse')"
+            v-model="options.simulateHumanMouse"
+          ></vn-switch>
+        </div>
       </div>
     </div>
 

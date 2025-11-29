@@ -8,6 +8,7 @@ import {
   getBrowser
 } from 'utils/common';
 import {targetEnv, clientAppVersion} from 'utils/config';
+import {humanMouse} from 'utils/human-mouse';
 
 function main() {
   // Script may be injected multiple times.
@@ -21,6 +22,7 @@ function main() {
   let solverButton = null;
   let autoResolveEnabled = false;
   let isAutoSolving = false;
+  let simulateHumanMouse = true;
 
   function setSolverState({working = true} = {}) {
     solverWorking = working;
@@ -299,7 +301,11 @@ function main() {
           await tapEnter(audioButton);
         }
       } else {
-        dispatchEnter(audioButton);
+        if (simulateHumanMouse) {
+          await humanMouse.clickOn(audioButton);
+        } else {
+          dispatchEnter(audioButton);
+        }
       }
 
       const result = await Promise.race([
@@ -406,7 +412,11 @@ function main() {
         await tapEnter(submitButton);
       }
     } else {
-      dispatchEnter(submitButton);
+      if (simulateHumanMouse) {
+        await humanMouse.clickOn(submitButton);
+      } else {
+        dispatchEnter(submitButton);
+      }
     }
 
     browser.runtime.sendMessage({id: 'captchaSolved'});
@@ -544,8 +554,12 @@ function main() {
   }
 
   async function loadSettings() {
-    const {autoResolveEnabled: enabled} = await storage.get('autoResolveEnabled');
+    const {autoResolveEnabled: enabled, simulateHumanMouse: shm} = await storage.get([
+      'autoResolveEnabled',
+      'simulateHumanMouse'
+    ]);
     autoResolveEnabled = Boolean(enabled);
+    simulateHumanMouse = shm !== undefined ? Boolean(shm) : true;
   }
 
   function addStorageListener() {
@@ -553,6 +567,9 @@ function main() {
       if (area !== 'local') return;
       if (changes.autoResolveEnabled) {
         autoResolveEnabled = Boolean(changes.autoResolveEnabled.newValue);
+      }
+      if (changes.simulateHumanMouse) {
+        simulateHumanMouse = Boolean(changes.simulateHumanMouse.newValue);
       }
     });
   }

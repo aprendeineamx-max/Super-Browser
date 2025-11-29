@@ -16,6 +16,7 @@ const optionKeys = [
   'autoResolveEnabled',
   'solverTimeoutMs',
   'solverRetryCount',
+  'simulateHumanMouse',
   'hotkey',
   'witSpeechApiKeys',
   'loadEnglishChallenge',

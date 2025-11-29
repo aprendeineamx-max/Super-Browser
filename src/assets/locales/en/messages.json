@@ -62,6 +62,10 @@
     "message": "Example: Ctrl+Shift+L",
     "description": "Hint for hotkey."
   },
+  "optionTitle_humanMouse": {
+    "message": "Simulate human mouse movement",
+    "description": "Toggle to enable human-like mouse events."
+  },
 
   "optionValue_speechService_googleSpeechApi": {
     "message": "Google Cloud Speech-to-Text",
