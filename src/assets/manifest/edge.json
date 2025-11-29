@@ -23,7 +23,7 @@
   "host_permissions": ["<all_urls>"],
 
   "content_security_policy": {
-    "extension_pages": "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; style-src 'self' 'unsafe-inline' https: data: blob:; img-src * data: blob:; connect-src *; object-src 'self'; frame-ancestors *;"
+    "extension_pages": "default-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline' https: data: blob:; img-src * data: blob:; connect-src *; object-src 'self'; frame-ancestors *;"
   },
 
   "icons": {
