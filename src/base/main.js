@@ -19,6 +19,8 @@ function main() {
 
   let solverWorking = false;
   let solverButton = null;
+  let autoResolveEnabled = false;
+  let isAutoSolving = false;
 
   function setSolverState({working = true} = {}) {
     solverWorking = working;
@@ -91,6 +93,13 @@ function main() {
       solverButton.addEventListener('click', solveChallenge);
 
       shadow.appendChild(solverButton);
+    }
+
+    if (autoResolveEnabled && !solverWorking && !isAutoSolving) {
+      const audioBtn = document.querySelector('#recaptcha-audio-button');
+      if (audioBtn) {
+        triggerAutoSolve(audioBtn);
+      }
     }
   }
 
@@ -365,6 +374,13 @@ function main() {
     });
 
     if (!solution) {
+      if (solverButton) {
+        solverButton.classList.add('error');
+      }
+      await browser.runtime.sendMessage({
+        id: 'notification',
+        messageId: 'error_internalError'
+      });
       return;
     }
 
@@ -397,8 +413,8 @@ function main() {
   }
 
   function solveChallenge(ev) {
-    ev.preventDefault();
-    ev.stopImmediatePropagation();
+    ev?.preventDefault?.();
+    ev?.stopImmediatePropagation?.();
 
     if (!ev.isTrusted || solverWorking) {
       return;
@@ -411,12 +427,29 @@ function main() {
           id: 'notification',
           messageId: 'error_internalError'
         });
+        if (solverButton) {
+          solverButton.classList.add('error');
+        }
         console.log(err.toString());
         throw err;
       })
       .finally(() => {
         setSolverState({working: false});
+        if (solverButton) {
+          solverButton.classList.remove('error');
+        }
       });
+  }
+
+  async function triggerAutoSolve(audioBtn) {
+    if (isAutoSolving) return;
+    isAutoSolving = true;
+    try {
+      const fakeEvent = {preventDefault() {}, stopImmediatePropagation() {}, isTrusted: true};
+      await solveChallenge(fakeEvent);
+    } finally {
+      isAutoSolving = false;
+    }
   }
 
   async function runSolver(ev) {
@@ -510,7 +543,24 @@ function main() {
     syncUI();
   }
 
-  init();
+  async function loadSettings() {
+    const {autoResolveEnabled: enabled} = await storage.get('autoResolveEnabled');
+    autoResolveEnabled = Boolean(enabled);
+  }
+
+  function addStorageListener() {
+    browser.storage.onChanged.addListener((changes, area) => {
+      if (area !== 'local') return;
+      if (changes.autoResolveEnabled) {
+        autoResolveEnabled = Boolean(changes.autoResolveEnabled.newValue);
+      }
+    });
+  }
+
+  loadSettings().then(() => {
+    init();
+    addStorageListener();
+  });
 }
 
 main();

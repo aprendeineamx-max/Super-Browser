@@ -91,6 +91,35 @@ async function syncLoggerConfig() {
   }
 }
 
+function addStorageHotReload() {
+  browser.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local') return;
+    const watched = [
+      'speechService',
+      'speechServiceOrder',
+      'googleSpeechApiKey',
+      'ibmSpeechApiUrl',
+      'ibmSpeechApiKey',
+      'microsoftSpeechApiLoc',
+      'microsoftSpeechApiKey',
+      'customSpeechApiUrl',
+      'customSpeechApiHeaders',
+      'customSpeechApiBodyTemplate',
+      'customSpeechApiResponsePath',
+      'witSpeechApiKeys',
+      'logLevel',
+      'logSampleRate'
+    ];
+    const hit = Object.keys(changes).some(key => watched.includes(key));
+    if (hit) {
+      syncLoggerConfig();
+      logger.info('Options changed, STT config will be used on next solve', {
+        keys: Object.keys(changes)
+      });
+    }
+  });
+}
+
 function getFrameClientPos(index) {
   let currentIndex = -1;
   if (window !== window.top) {
@@ -1229,6 +1258,7 @@ function init() {
   addMessageListener();
   addInstallListener();
   addStartupListener();
+  addStorageHotReload();
 
   setup().then(syncLoggerConfig);
 }
