@@ -2,7 +2,18 @@
 // Requires: npm install electron (run separately; not added to package dependencies here).
 
 const path = require('node:path');
-const {app, BrowserWindow, session} = require('electron');
+
+const electron = require('electron') || {};
+const app = electron.app || electron.default?.app;
+const BrowserWindow = electron.BrowserWindow || electron.default?.BrowserWindow;
+const session = electron.session || electron.default?.session;
+
+if (!app || !BrowserWindow || !session) {
+  console.error(
+    'Electron module did not expose app/BrowserWindow. Run with "npx electron embedded/electron/main.js" or ensure electron is installed globally.'
+  );
+  process.exit(1);
+}
 
 const EXT_PATH =
   process.env.BUSTER_EXT_PATH ||
