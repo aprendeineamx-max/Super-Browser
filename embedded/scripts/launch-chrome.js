@@ -3,12 +3,13 @@
 // Optional: BUSTER_EXT_PATH, BUSTER_PROFILE_PATH, BUSTER_TARGET (URL to open), BUSTER_BUILD=1 to force build.
 const path = require('node:path');
 const fs = require('node:fs');
+const os = require('node:os');
 const {exec, execSync} = require('node:child_process');
 const {computeExecutablePath, BrowserPlatform} = require('@puppeteer/browsers');
 const userAgents = require('./user-agents');
 
 const scriptDir = __dirname;
-const shadowDir = path.resolve(scriptDir, '..', '.ext-shadow');
+const shadowDirBase = path.join(os.tmpdir(), 'buster-ext-staged');
 
 const DEFAULT_PATHS = [
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -136,13 +137,14 @@ try {
 inspectManifest();
 
 function stageExtension() {
-  if (fs.existsSync(shadowDir)) {
-    fs.rmSync(shadowDir, {recursive: true, force: true});
+  const target = shadowDirBase;
+  if (fs.existsSync(target)) {
+    fs.rmSync(target, {recursive: true, force: true});
   }
-  fs.mkdirSync(shadowDir, {recursive: true});
-  fs.cpSync(extPath, shadowDir, {recursive: true});
-  console.log('[Launcher] Extensión copiada a ruta sin espacios:', shadowDir);
-  return shadowDir;
+  fs.mkdirSync(target, {recursive: true});
+  fs.cpSync(extPath, target, {recursive: true});
+  console.log('[Launcher] Extensión copiada a ruta temporal sin espacios:', target);
+  return target;
 }
 
 const stagedExtPath = stageExtension();
