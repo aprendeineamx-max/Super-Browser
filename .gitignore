@@ -5,6 +5,7 @@
 /embedded/dist/
 /embedded/bin/
 /embedded/releases/
+/embedded/scripts/user-data/
 
 /secrets.json
 
