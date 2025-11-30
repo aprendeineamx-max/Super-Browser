@@ -108,7 +108,13 @@ try {
 
 const profilePath =
   process.env.BUSTER_PROFILE_PATH ||
-  fs.mkdtempSync(path.join(os.tmpdir(), 'buster-chrome-'));
+  (function () {
+    const fixed = path.resolve(scriptDir, 'user-data');
+    if (!fs.existsSync(fixed)) {
+      fs.mkdirSync(fixed, {recursive: true});
+    }
+    return fixed;
+  })();
 
 const targetUrl =
   process.env.BUSTER_TARGET || 'https://patrickhlauke.github.io/recaptcha/';
@@ -119,9 +125,9 @@ ensureBuild();
 const ua = userAgents[Math.floor(Math.random() * userAgents.length)];
 
 const args = [
-  `--disable-extensions-except="${extPath}"`,
-  `--load-extension="${extPath}"`,
-  `--user-data-dir="${profilePath}"`,
+  `--disable-extensions-except=${extPath}`,
+  `--load-extension=${extPath}`,
+  `--user-data-dir=${profilePath}`,
   `--user-agent=${ua}`,
   '--no-first-run',
   '--no-default-browser-check',
