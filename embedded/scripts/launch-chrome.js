@@ -90,6 +90,9 @@ if (!fs.existsSync(manifestPath)) {
   process.exit(1);
 }
 
+// Try to fix manifest path mismatches before launching.
+require('./fix-build');
+
 function inspectManifest() {
   try {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
