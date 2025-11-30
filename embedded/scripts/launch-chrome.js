@@ -8,6 +8,7 @@ const {computeExecutablePath, BrowserPlatform} = require('@puppeteer/browsers');
 const userAgents = require('./user-agents');
 
 const scriptDir = __dirname;
+const shadowDir = path.resolve(scriptDir, '..', '.ext-shadow');
 
 const DEFAULT_PATHS = [
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -134,6 +135,18 @@ try {
 
 inspectManifest();
 
+function stageExtension() {
+  if (fs.existsSync(shadowDir)) {
+    fs.rmSync(shadowDir, {recursive: true, force: true});
+  }
+  fs.mkdirSync(shadowDir, {recursive: true});
+  fs.cpSync(extPath, shadowDir, {recursive: true});
+  console.log('[Launcher] Extensión copiada a ruta sin espacios:', shadowDir);
+  return shadowDir;
+}
+
+const stagedExtPath = stageExtension();
+
 const profilePath =
   process.env.BUSTER_PROFILE_PATH ||
   (function () {
@@ -155,7 +168,7 @@ const ua = userAgents[Math.floor(Math.random() * userAgents.length)];
 
 const parts = [
   JSON.stringify(chromePath),
-  `--load-extension=${JSON.stringify(extPath)}`,
+  `--load-extension=${JSON.stringify(stagedExtPath)}`,
   `--user-data-dir=${JSON.stringify(profilePath)}`,
   `--user-agent=${JSON.stringify(ua)}`,
   '--no-first-run',
