@@ -1,12 +1,13 @@
-// Launches local Chrome with the extension, using provided profile (for cookies/sessions).
+// Launches local Chrome with the extension; uses exec with quoted args to survive spaces.
 // Usage: CHROME_PATH=<path-to-chrome> node embedded/scripts/launch-chrome.js
 // Optional: BUSTER_EXT_PATH, BUSTER_PROFILE_PATH, BUSTER_TARGET (URL to open), BUSTER_BUILD=1 to force build.
 const path = require('node:path');
 const fs = require('node:fs');
-const os = require('node:os');
-const {spawn, execSync} = require('node:child_process');
+const {exec, execSync} = require('node:child_process');
 const {computeExecutablePath, BrowserPlatform} = require('@puppeteer/browsers');
 const userAgents = require('./user-agents');
+
+const scriptDir = __dirname;
 
 const DEFAULT_PATHS = [
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -15,8 +16,8 @@ const DEFAULT_PATHS = [
 ];
 
 function resolveLocalBrowser() {
-  const binDir = path.join(__dirname, '..', 'bin');
-  const configPath = path.join(__dirname, '..', 'browser-config.json');
+  const binDir = path.join(scriptDir, '..', 'bin');
+  const configPath = path.join(scriptDir, '..', 'browser-config.json');
   if (fs.existsSync(configPath)) {
     try {
       const cfg = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
@@ -52,7 +53,6 @@ if (!chromePath) {
   process.exit(1);
 }
 
-const scriptDir = __dirname;
 const extPath =
   process.env.BUSTER_EXT_PATH ||
   path.resolve(scriptDir, '..', '..', 'dist', 'chrome');
@@ -72,7 +72,7 @@ function ensureBuild() {
   try {
     execSync(`${npmCmd} run build:prod:chrome`, {
       stdio: 'inherit',
-      cwd: path.join(__dirname, '..', '..')
+      cwd: path.join(scriptDir, '..', '..')
     });
   } catch (err) {
     console.error('[buster-launcher] Build failed:', err.message);
@@ -93,13 +93,12 @@ if (!fs.existsSync(manifestPath)) {
 try {
   const files = fs.readdirSync(extPath);
   console.log('Archivos en dist:', files);
-  // Compilación de emergencia si casi está vacío
   if (files.length <= 1) {
     console.warn('[Launcher] dist/chrome parece vacío, ejecutando build de emergencia...');
     const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
     execSync(`${npmCmd} run build:prod:chrome`, {
       stdio: 'inherit',
-      cwd: path.join(__dirname, '..', '..')
+      cwd: path.join(scriptDir, '..', '..')
     });
   }
 } catch (err) {
@@ -110,9 +109,10 @@ const profilePath =
   process.env.BUSTER_PROFILE_PATH ||
   (function () {
     const fixed = path.resolve(scriptDir, 'user-data');
-    if (!fs.existsSync(fixed)) {
-      fs.mkdirSync(fixed, {recursive: true});
+    if (fs.existsSync(fixed)) {
+      fs.rmSync(fixed, {recursive: true, force: true});
     }
+    fs.mkdirSync(fixed, {recursive: true});
     return fixed;
   })();
 
@@ -124,11 +124,11 @@ ensureBuild();
 // Pick a random UA from the pool.
 const ua = userAgents[Math.floor(Math.random() * userAgents.length)];
 
-const args = [
-  `--disable-extensions-except=${extPath}`,
-  `--load-extension=${extPath}`,
-  `--user-data-dir=${profilePath}`,
-  `--user-agent=${ua}`,
+const parts = [
+  JSON.stringify(chromePath),
+  `--load-extension=${JSON.stringify(extPath)}`,
+  `--user-data-dir=${JSON.stringify(profilePath)}`,
+  `--user-agent=${JSON.stringify(ua)}`,
   '--no-first-run',
   '--no-default-browser-check',
   '--disable-popup-blocking',
@@ -139,25 +139,16 @@ const args = [
   targetUrl
 ];
 
+const command = parts.join(' ');
+
 console.log('Launching Chrome with extension:', extPath);
 console.log('Profile:', profilePath);
 console.log('Target URL:', targetUrl);
 console.log('[buster-launcher] Identity (UA):', ua);
-console.log('Argumentos de lanzamiento:', args);
-const child = spawn(chromePath, args, {
-  stdio: 'inherit',
-  detached: true
-});
+console.log('[Launcher] Ejecutando comando RAW:', command);
 
-console.log(`[buster-launcher] Navegador lanzado y esperando en PID: ${child.pid}`);
-
-child.unref();
-
-// Mantén el proceso vivo hasta que se envíe SIGINT/CTRL+C, para inspección manual.
-const keepAlive = setInterval(() => {}, 1 << 30);
-
-process.on('SIGINT', () => {
-  clearInterval(keepAlive);
-  console.log('[buster-launcher] Terminando por SIGINT...');
-  process.exit(0);
+exec(command, err => {
+  if (err) {
+    console.error('[buster-launcher] Error al lanzar Chrome:', err);
+  }
 });
