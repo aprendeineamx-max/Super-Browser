@@ -90,6 +90,22 @@ if (!fs.existsSync(manifestPath)) {
   process.exit(1);
 }
 
+try {
+  const files = fs.readdirSync(extPath);
+  console.log('Archivos en dist:', files);
+  // Compilación de emergencia si casi está vacío
+  if (files.length <= 1) {
+    console.warn('[Launcher] dist/chrome parece vacío, ejecutando build de emergencia...');
+    const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    execSync(`${npmCmd} run build:prod:chrome`, {
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..', '..')
+    });
+  }
+} catch (err) {
+  console.warn('[Launcher] No se pudo listar dist:', err.message);
+}
+
 const profilePath =
   process.env.BUSTER_PROFILE_PATH ||
   fs.mkdtempSync(path.join(os.tmpdir(), 'buster-chrome-'));
@@ -103,9 +119,9 @@ ensureBuild();
 const ua = userAgents[Math.floor(Math.random() * userAgents.length)];
 
 const args = [
-  `--disable-extensions-except=${extPath}`,
-  `--load-extension=${extPath}`,
-  `--user-data-dir=${profilePath}`,
+  `--disable-extensions-except="${extPath}"`,
+  `--load-extension="${extPath}"`,
+  `--user-data-dir="${profilePath}"`,
   `--user-agent=${ua}`,
   '--no-first-run',
   '--no-default-browser-check',
