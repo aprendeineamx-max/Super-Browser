@@ -41,6 +41,7 @@ function launch() {
     '--no-first-run',
     '--no-default-browser-check',
     '--disable-popup-blocking',
+    '--no-sandbox',
     'https://example.com'
   ];
 
