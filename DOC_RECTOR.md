@@ -21,3 +21,19 @@ Ademas, siempre que termines tu respuesta, devuelve este mismo bloque para que p
 - Simulación de movimiento de mouse para evadir detección de bots.
 - Rotación de User-Agents y fingerprinting en el navegador portable.
 - Soporte de proxies en el launcher (args/config).
+
+## Experimento: Lanzador basico con extension arbitraria
+Objetivo: iniciar un navegador minimo cargando cualquier extension indicada por ruta absoluta, sin hardening ni logica adicional.
+
+- Inputs:
+  - EXT_PATH: ruta absoluta a la carpeta de la extension (desempaquetada, con manifest.json).
+  - CHROME_PATH opcional: binario de Chrome/Chromium; si no, usar ruta por defecto del sistema.
+  - PROFILE_DIR opcional: carpeta de perfil; si no, usar temp con limpieza previa.
+- Pasos:
+  1. Validar que EXT_PATH/manifest.json exista.
+  2. Lanzar chrome con flags minimos: --load-extension=EXT_PATH, --user-data-dir=PROFILE_DIR, --no-first-run, --no-default-browser-check.
+  3. No aplicar flags de stealth ni staging; solo asegurar que la extension se monte.
+- Verificacion:
+  - Abrir chrome://extensions y confirmar que la extension aparece habilitada.
+  - Abrir una URL de prueba (p. ej., https://example.com) para validar que los scripts de la extension se cargan sin errores.
+
