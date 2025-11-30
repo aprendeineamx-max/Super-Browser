@@ -90,6 +90,30 @@ if (!fs.existsSync(manifestPath)) {
   process.exit(1);
 }
 
+function inspectManifest() {
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    const bg =
+      (manifest.background && manifest.background.service_worker) ||
+      (manifest.background && manifest.background.scripts && manifest.background.scripts[0]);
+    console.log('[Launcher] El manifiesto espera el script de background:', bg || 'N/D');
+    if (bg) {
+      const bgPath = path.join(extPath, bg);
+      if (!fs.existsSync(bgPath)) {
+        console.error('[ERROR] Archivo faltante en dist/chrome:', bgPath);
+        console.error('[ERROR] Ejecutando reconstrucción forzada (npm run build:prod:chrome)...');
+        const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+        execSync(`${npmCmd} run build:prod:chrome`, {
+          stdio: 'inherit',
+          cwd: path.join(scriptDir, '..', '..')
+        });
+      }
+    }
+  } catch (err) {
+    console.error('[Launcher] No se pudo inspeccionar manifest.json:', err.message);
+  }
+}
+
 try {
   const files = fs.readdirSync(extPath);
   console.log('Archivos en dist:', files);
@@ -104,6 +128,8 @@ try {
 } catch (err) {
   console.warn('[Launcher] No se pudo listar dist:', err.message);
 }
+
+inspectManifest();
 
 const profilePath =
   process.env.BUSTER_PROFILE_PATH ||
