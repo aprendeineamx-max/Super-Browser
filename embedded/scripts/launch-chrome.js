@@ -152,7 +152,7 @@ const stagedExtPath = stageExtension();
 const profilePath =
   process.env.BUSTER_PROFILE_PATH ||
   (function () {
-    const fixed = path.resolve(scriptDir, 'user-data');
+    const fixed = path.join(os.tmpdir(), 'buster-profile');
     if (fs.existsSync(fixed)) {
       fs.rmSync(fixed, {recursive: true, force: true});
     }
