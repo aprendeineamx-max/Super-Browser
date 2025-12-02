@@ -43,6 +43,34 @@ if (!fs.existsSync(manifestPath)) {
   process.exit(1);
 }
 
+// Forzar matches <all_urls> si el build los trae diferente.
+try {
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+  const cs = manifest.content_scripts && manifest.content_scripts[0];
+  console.log('[launcher] Matches actuales:', cs && cs.matches);
+  let patched = false;
+  if (cs) {
+    const desired = ['<all_urls>'];
+    const same =
+      Array.isArray(cs.matches) &&
+      cs.matches.length === 1 &&
+      cs.matches[0] === '<all_urls>';
+    if (!same) {
+      cs.matches = desired;
+      cs.all_frames = true;
+      cs.match_about_blank = true;
+      manifest.content_scripts[0] = cs;
+      fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8');
+      patched = true;
+    }
+  }
+  if (patched) {
+    console.log('[launcher] Manifiesto PARCHEADO a <all_urls>');
+  }
+} catch (err) {
+  console.warn('[launcher] No se pudo auditar/parchear el manifest:', err.message);
+}
+
 // Validar que el content script final contenga los logs esperados.
 const builtScriptPath = path.join(EXT_PATH, 'src', 'base', 'script.js');
 if (fs.existsSync(builtScriptPath)) {
