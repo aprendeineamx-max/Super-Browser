@@ -18,6 +18,8 @@ function main() {
     self.baseModule = true;
   }
 
+  console.log('🚀 [CONTEXTO] URL:', window.location.href);
+  console.log('🖼️ [CONTEXTO] ¿Es Iframe?:', window !== window.top);
   console.log('[BUSTER] INICIO DE SCRIPT (debug)');
   console.log('[BUSTER] Content script inyectado en: ' + window.location.href);
   const markTarget = function () {
@@ -60,7 +62,7 @@ function main() {
   function forceInject() {
     if (document.getElementById('buster-force-btn')) return;
 
-    const btnHTML = `
+    let btnHTML = `
       <div id="buster-force-btn" style="
         position: fixed !important;
         bottom: 10px !important;
@@ -76,6 +78,26 @@ function main() {
         box-shadow: 0 0 10px rgba(0,0,0,0.5) !important;
       ">⚡ BUSTER HERE</div>
     `;
+
+    // Si estamos dentro del iframe de reCAPTCHA (dominio google/recaptcha), marcar fondo y mover botón a 0,0
+    if (window.location.href.includes('google.com/recaptcha') || window.location.href.includes('recaptcha.net/recaptcha')) {
+      document.body.style.backgroundColor = 'pink';
+      btnHTML = `
+        <div id="buster-force-btn" style="
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          z-index: 2147483647 !important;
+          background: red !important;
+          color: white !important;
+          font-size: 20px !important;
+          padding: 10px !important;
+          border: 3px solid white !important;
+          font-weight: bold !important;
+          cursor: pointer !important;
+        ">¡ESTOY DENTRO!</div>
+      `;
+    }
 
     document.body.insertAdjacentHTML('beforeend', btnHTML);
     document.getElementById('buster-force-btn').addEventListener('click', () => {
