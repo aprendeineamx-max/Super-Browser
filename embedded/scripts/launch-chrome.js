@@ -45,11 +45,43 @@ if (!fs.existsSync(manifestPath)) {
 
 try {
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-  // Sobrescritura total de content_scripts para asegurar inyección en todos los iframes.
+// Auditoría de rutas y sobrescritura total de content_scripts
+  // Listar archivos .js reales
+  const jsFiles = [];
+  const walk = dir => {
+    for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (entry.isFile() && entry.name.endsWith('.js')) {
+        jsFiles.push(path.relative(EXT_PATH, full).replace(/\\/g, '/'));
+      }
+    }
+  };
+  walk(EXT_PATH);
+  jsFiles.forEach(f => console.log('[Auditoría] Archivo en disco:', f));
+
+  const cs = manifest.content_scripts && manifest.content_scripts[0];
+  const requestedJs = cs && cs.js ? cs.js : [];
+  console.log('[Auditoría] Manifiesto pide:', requestedJs);
+
+  // Escoger ruta válida
+  const desired = 'src/base/script.js';
+  let targetJs = desired;
+  if (!jsFiles.includes(desired)) {
+    const fallback = jsFiles.find(f => f.endsWith('base/script.js'));
+    if (fallback) {
+      targetJs = fallback;
+    } else {
+      console.error('[FATAL] No se encontró script.js de content_scripts en dist/chrome');
+      process.exit(1);
+    }
+  }
+
   manifest.content_scripts = [
     {
       matches: ['<all_urls>'],
-      js: ['src/base/script.js'],
+      js: [targetJs],
       css: ['src/base/style.css'],
       all_frames: true,
       match_about_blank: true,
@@ -58,7 +90,7 @@ try {
   ];
   manifest.host_permissions = ['<all_urls>'];
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8');
-  console.log('[launcher] Manifiesto PARCHEADO (content_scripts y host_permissions forzados a <all_urls>)');
+  console.log('[launcher] Manifiesto alineado con ruta JS:', targetJs);
 } catch (err) {
   console.warn('[launcher] No se pudo auditar/parchear el manifest:', err.message);
 }
