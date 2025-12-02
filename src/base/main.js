@@ -56,115 +56,36 @@ function main() {
     });
   }
 
+  // Inyección directa y persistente de un botón visible.
+  function forceInject() {
+    if (document.getElementById('buster-force-btn')) return;
+
+    const btnHTML = `
+      <div id="buster-force-btn" style="
+        position: fixed !important;
+        bottom: 10px !important;
+        right: 10px !important;
+        z-index: 2147483647 !important;
+        background-color: #ff4500 !important;
+        color: white !important;
+        padding: 10px 20px !important;
+        border: 2px solid white !important;
+        border-radius: 5px !important;
+        font-weight: bold !important;
+        cursor: pointer !important;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5) !important;
+      ">⚡ BUSTER HERE</div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', btnHTML);
+    document.getElementById('buster-force-btn').addEventListener('click', () => {
+      alert('¡Buster activado!');
+      // Aquí podrías llamar a solveChallenge() si quieres enlazar la lógica real.
+    });
+  }
+
   function ensureSolverButton() {
-    console.log('[BUSTER DEBUG] Tick ensureSolverButton');
-
-    // Mostrar controles de reset cuando Google bloquea el captcha.
-    if (isBlocked()) {
-      if (!document.querySelector('.solver-controls')) {
-        const div = document.createElement('div');
-        div.classList.add('solver-controls');
-
-        const button = document.createElement('button');
-        button.classList.add('rc-button');
-        button.setAttribute('tabindex', '0');
-        button.setAttribute('title', getText('buttonLabel_reset'));
-        button.id = 'reset-button';
-        button.addEventListener('click', resetCaptcha);
-
-        const footer = document.querySelector('.rc-footer') || document.body;
-        footer.appendChild(div);
-        div.appendChild(button);
-      }
-      return;
-    }
-
-    // Si ya existe y sigue presente, solo dispara auto-resolver si toca.
-    if (solverButton && document.contains(solverButton)) {
-      if (autoResolveEnabled && !solverWorking && !isAutoSolving) {
-        const audioBtn = document.querySelector('#recaptcha-audio-button');
-        if (audioBtn) {
-          triggerAutoSolve(audioBtn);
-        }
-      }
-      return;
-    }
-
-    const helpButton = document.querySelector('#recaptcha-help-button');
-    const helpButtonHolder = document.querySelector('.help-button-holder');
-    if (helpButton && helpButtonHolder) {
-      console.log('[BUSTER DEBUG] Widget detectado:', helpButton);
-      helpButton.remove();
-      helpButtonHolder.tabIndex = document.querySelector('audio#audio-source')
-        ? 0
-        : 2;
-    }
-
-    const styleUrl = browser.runtime.getURL('/src/base/solver-button.css');
-    solverButton = document.createElement('button');
-    solverButton.setAttribute('tabindex', '0');
-    solverButton.setAttribute('title', getText('buttonLabel_solve'));
-    solverButton.id = 'solver-button';
-    solverButton.innerText = '⚡ SOLVE';
-    solverButton.style.minWidth = '80px';
-    solverButton.style.minHeight = '40px';
-    solverButton.style.backgroundColor = '#ff4500';
-    solverButton.style.color = 'white';
-    solverButton.style.fontWeight = 'bold';
-    solverButton.style.zIndex = '2147483647';
-    solverButton.style.border = '2px solid white';
-    if (solverWorking) {
-      solverButton.classList.add('working');
-    }
-    solverButton.addEventListener('click', solveChallenge);
-
-    let container = document.querySelector('.rc-footer');
-
-    if (helpButtonHolder) {
-      // Camino original con shadow DOM en el holder.
-      const shadow = helpButtonHolder.attachShadow({
-        mode: 'closed',
-        delegatesFocus: true
-      });
-      const link = document.createElement('link');
-      link.setAttribute('rel', 'stylesheet');
-      link.setAttribute('href', styleUrl);
-      shadow.appendChild(link);
-      shadow.appendChild(solverButton);
-    } else if (container) {
-      const link = document.createElement('link');
-      link.setAttribute('rel', 'stylesheet');
-      link.setAttribute('href', styleUrl);
-      document.head.appendChild(link);
-      container.appendChild(solverButton);
-    } else {
-      // Fallback flotante
-      console.log('[BUSTER] Footer no encontrado, usando modo flotante');
-      container = document.body;
-      const link = document.createElement('link');
-      link.setAttribute('rel', 'stylesheet');
-      link.setAttribute('href', styleUrl);
-      document.head.appendChild(link);
-
-      solverButton.style.position = 'fixed';
-      solverButton.style.bottom = '5px';
-      solverButton.style.right = '5px';
-      solverButton.style.zIndex = '2147483647';
-      solverButton.style.padding = '8px 10px';
-      solverButton.style.background = '#ff7a00';
-      solverButton.style.border = 'none';
-      solverButton.style.borderRadius = '6px';
-      solverButton.style.cursor = 'pointer';
-      solverButton.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
-      container.appendChild(solverButton);
-    }
-
-    if (autoResolveEnabled && !solverWorking && !isAutoSolving) {
-      const audioBtn = document.querySelector('#recaptcha-audio-button');
-      if (audioBtn) {
-        triggerAutoSolve(audioBtn);
-      }
-    }
+    forceInject();
   }
 
   function isBlocked({timeout = 0} = {}) {
