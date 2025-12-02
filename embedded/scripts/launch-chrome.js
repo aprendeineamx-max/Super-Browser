@@ -113,6 +113,19 @@ if (proxyValue) {
   args.splice(args.length - 1, 0, `--proxy-server=${JSON.stringify(proxyValue)}`);
 }
 
+const buildCommand =
+  process.env.BUSTER_DEBUG === '1'
+    ? `${process.platform === 'win32' ? 'npm.cmd' : 'npm'} run build:dev:chrome`
+    : `${process.platform === 'win32' ? 'npm.cmd' : 'npm'} run build:prod:chrome`;
+
+// Rebuild if manifest or staged ext missing
+try {
+  execSync(buildCommand, {stdio: 'inherit', cwd: projectRoot});
+} catch (err) {
+  console.error('[launcher] Error al ejecutar build:', err.message);
+  process.exit(1);
+}
+
 const command = [JSON.stringify(chromePath)].concat(args).join(' ');
 console.log('[launcher] Chrome path:', chromePath);
 console.log('[launcher] EXT_PATH:', EXT_PATH);

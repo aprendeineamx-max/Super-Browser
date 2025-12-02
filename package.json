@@ -22,6 +22,7 @@
     "build:prod:edge": "cross-env TARGET_ENV=edge npm run _build:prod",
     "build:prod:firefox": "cross-env TARGET_ENV=firefox npm run _build:prod",
     "build:prod:opera": "cross-env TARGET_ENV=opera npm run _build:prod",
+    "build:dev:chrome": "cross-env NODE_ENV=development TARGET_ENV=chrome gulp build",
     "_build:prod:zip": "npm run _build:prod && gulp zip",
     "build:prod:zip:chrome": "cross-env TARGET_ENV=chrome npm run _build:prod:zip",
     "build:prod:zip:edge": "cross-env TARGET_ENV=edge npm run _build:prod:zip",
