@@ -18,6 +18,8 @@ function main() {
     self.baseModule = true;
   }
 
+  console.log('[Buster] Content script cargado en:', window.location.href);
+
   let solverWorking = false;
   let solverButton = null;
   let autoResolveEnabled = false;
@@ -64,6 +66,7 @@ function main() {
 
     const helpButton = document.querySelector('#recaptcha-help-button');
     if (helpButton) {
+      console.log('[Buster] Widget detectado:', helpButton);
       helpButton.remove();
 
       const helpButtonHolder = document.querySelector('.help-button-holder');

@@ -20,7 +20,11 @@
     "scripting"
   ],
 
-  "host_permissions": ["<all_urls>"],
+  "host_permissions": [
+    "<all_urls>",
+    "*://*.google.com/*",
+    "*://*.recaptcha.net/*"
+  ],
 
   "content_security_policy": {
     "extension_pages": "default-src 'self' data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline' data: blob:; img-src * data: blob:; connect-src *; object-src 'self'; frame-ancestors *;"
@@ -74,6 +78,7 @@
         "https://www.recaptcha.net/recaptcha/enterprise/bframe*"
       ],
       "all_frames": true,
+      "match_about_blank": true,
       "run_at": "document_idle",
       "css": ["src/base/style.css"],
       "js": ["src/base/script.js"]
