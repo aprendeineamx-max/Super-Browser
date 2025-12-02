@@ -6,6 +6,8 @@ window.addEventListener('error', function (e) {
   (document.body || document.documentElement).appendChild(errDiv);
 });
 
+alert('BUSTER ESTÁ VIVO');
+
 import storage from 'storage/storage';
 import {meanSleep, pingClientApp} from 'utils/app';
 import {
