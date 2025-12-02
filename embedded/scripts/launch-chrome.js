@@ -43,30 +43,22 @@ if (!fs.existsSync(manifestPath)) {
   process.exit(1);
 }
 
-// Forzar matches <all_urls> si el build los trae diferente.
 try {
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-  const cs = manifest.content_scripts && manifest.content_scripts[0];
-  console.log('[launcher] Matches actuales:', cs && cs.matches);
-  let patched = false;
-  if (cs) {
-    const desired = ['<all_urls>'];
-    const same =
-      Array.isArray(cs.matches) &&
-      cs.matches.length === 1 &&
-      cs.matches[0] === '<all_urls>';
-    if (!same) {
-      cs.matches = desired;
-      cs.all_frames = true;
-      cs.match_about_blank = true;
-      manifest.content_scripts[0] = cs;
-      fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8');
-      patched = true;
+  // Sobrescritura total de content_scripts para asegurar inyección en todos los iframes.
+  manifest.content_scripts = [
+    {
+      matches: ['<all_urls>'],
+      js: ['src/base/script.js'],
+      css: ['src/base/style.css'],
+      all_frames: true,
+      match_about_blank: true,
+      run_at: 'document_start'
     }
-  }
-  if (patched) {
-    console.log('[launcher] Manifiesto PARCHEADO a <all_urls>');
-  }
+  ];
+  manifest.host_permissions = ['<all_urls>'];
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8');
+  console.log('[launcher] Manifiesto PARCHEADO (content_scripts y host_permissions forzados a <all_urls>)');
 } catch (err) {
   console.warn('[launcher] No se pudo auditar/parchear el manifest:', err.message);
 }
