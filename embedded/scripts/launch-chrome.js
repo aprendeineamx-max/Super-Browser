@@ -10,6 +10,7 @@ const projectRoot = path.resolve(scriptDir, '..', '..');
 const EXT_PATH = path.resolve(projectRoot, 'dist', 'chrome');
 const PROFILE_DIR = path.join(os.tmpdir(), 'buster-portable-profile');
 const STAGED_EXT_DIR = path.join(os.tmpdir(), 'buster-ext-staged');
+const PROXY_FILE = path.join(projectRoot, 'embedded', 'proxy.txt');
 
 function findPlaywrightChromium() {
   const base = path.join(projectRoot, 'node_modules', 'playwright', '.local-browsers');
@@ -59,6 +60,23 @@ fs.mkdirSync(PROFILE_DIR, {recursive: true});
 
 const stagedExt = stageExtension();
 
+let proxyValue = null;
+if (fs.existsSync(PROXY_FILE)) {
+  try {
+    const raw = fs.readFileSync(PROXY_FILE, 'utf-8').trim();
+    if (raw) {
+      proxyValue = raw;
+      console.log('[launcher] Usando Proxy: SI (Configurado desde archivo)');
+    } else {
+      console.log('[launcher] Modo Directo (proxy.txt vacío)');
+    }
+  } catch (err) {
+    console.warn('[launcher] No se pudo leer proxy.txt:', err.message);
+  }
+} else {
+  console.log('[launcher] Modo Directo (Sin Proxy)');
+}
+
 const args = [
   `--disable-extensions-except=${JSON.stringify(stagedExt)}`,
   `--load-extension=${JSON.stringify(stagedExt)}`,
@@ -69,6 +87,10 @@ const args = [
   '--no-sandbox',
   'https://example.com'
 ];
+
+if (proxyValue) {
+  args.splice(args.length - 1, 0, `--proxy-server=${JSON.stringify(proxyValue)}`);
+}
 
 const command = [JSON.stringify(chromePath)].concat(args).join(' ');
 console.log('[launcher] Chrome path:', chromePath);
