@@ -18,6 +18,15 @@ function main() {
     self.baseModule = true;
   }
 
+  console.log('⚡ [BUSTER] Running in:', window.location.href);
+  if (window.location.href.includes('recaptcha') || window.location.href.includes('api2')) {
+    console.log('🎯 [BUSTER] TARGET DETECTED!');
+    if (document && document.body) {
+      document.body.style.border = '5px solid #ff4500';
+      document.body.style.boxSizing = 'border-box';
+    }
+  }
+
   console.log('🚀 [BUSTER DEBUG] Content script inyectado en:', window.location.href);
 
   let solverWorking = false;
