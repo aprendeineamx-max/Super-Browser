@@ -62,48 +62,47 @@ function main() {
   function forceInject() {
     if (document.getElementById('buster-force-btn')) return;
 
-    let btnHTML = `
-      <div id="buster-force-btn" style="
-        position: fixed !important;
-        bottom: 10px !important;
-        right: 10px !important;
-        z-index: 2147483647 !important;
-        background-color: #ff4500 !important;
-        color: white !important;
-        padding: 10px 20px !important;
-        border: 2px solid white !important;
-        border-radius: 5px !important;
-        font-weight: bold !important;
-        cursor: pointer !important;
-        box-shadow: 0 0 10px rgba(0,0,0,0.5) !important;
-      ">⚡ BUSTER HERE</div>
-    `;
+    const btn = document.createElement('div');
+    btn.id = 'buster-force-btn';
+    btn.innerText = '⚡ SOLVE';
 
-    // Si estamos dentro del iframe de reCAPTCHA (dominio google/recaptcha), marcar fondo y mover botón a 0,0
-    if (window.location.href.includes('google.com/recaptcha') || window.location.href.includes('recaptcha.net/recaptcha')) {
-      document.body.style.backgroundColor = 'pink';
-      btnHTML = `
-        <div id="buster-force-btn" style="
-          position: fixed !important;
-          top: 0 !important;
-          left: 0 !important;
-          z-index: 2147483647 !important;
-          background: red !important;
-          color: white !important;
-          font-size: 20px !important;
-          padding: 10px !important;
-          border: 3px solid white !important;
-          font-weight: bold !important;
-          cursor: pointer !important;
-        ">¡ESTOY DENTRO!</div>
-      `;
+    Object.assign(btn.style, {
+      position: 'fixed',
+      bottom: '10px',
+      right: '10px',
+      zIndex: '2147483647',
+      backgroundColor: '#ff4500',
+      color: 'white',
+      padding: '10px 20px',
+      border: '2px solid white',
+      borderRadius: '5px',
+      fontWeight: 'bold',
+      cursor: 'pointer',
+      boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+      fontSize: '14px',
+      lineHeight: '1.2',
+      textAlign: 'center'
+    });
+
+    if (
+      window.location.href.includes('google.com/recaptcha') ||
+      window.location.href.includes('recaptcha.net/recaptcha')
+    ) {
+      btn.innerText = '🤖 ESTOY DENTRO';
+      btn.style.backgroundColor = '#00C853';
+      btn.style.top = '0px';
+      btn.style.left = '0px';
+      btn.style.bottom = 'auto';
+      btn.style.right = 'auto';
     }
 
-    document.body.insertAdjacentHTML('beforeend', btnHTML);
-    document.getElementById('buster-force-btn').addEventListener('click', () => {
-      alert('¡Buster activado!');
-      // Aquí podrías llamar a solveChallenge() si quieres enlazar la lógica real.
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      alert('¡Click detectado dentro del iframe!');
     });
+
+    (document.body || document.documentElement).appendChild(btn);
   }
 
   function ensureSolverButton() {
