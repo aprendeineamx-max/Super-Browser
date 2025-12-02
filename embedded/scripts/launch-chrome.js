@@ -43,6 +43,20 @@ if (!fs.existsSync(manifestPath)) {
   process.exit(1);
 }
 
+// Validar que el content script final contenga los logs esperados.
+const builtScriptPath = path.join(EXT_PATH, 'src', 'base', 'script.js');
+if (fs.existsSync(builtScriptPath)) {
+  try {
+    const content = fs.readFileSync(builtScriptPath, 'utf-8').split(/\r?\n/);
+    console.log('[launcher] Primeras 5 líneas de dist/src/base/script.js:');
+    console.log(content.slice(0, 5).join('\n'));
+  } catch (err) {
+    console.warn('[launcher] No se pudo leer el content script built:', err.message);
+  }
+} else {
+  console.warn('[launcher] No se encontró dist/src/base/script.js para validar logs');
+}
+
 function stageExtension() {
   if (fs.existsSync(STAGED_EXT_DIR)) {
     fs.rmSync(STAGED_EXT_DIR, {recursive: true, force: true});
@@ -91,7 +105,8 @@ const args = [
   '--no-default-browser-check',
   '--disable-popup-blocking',
   '--no-sandbox',
-  'https://example.com'
+  'https://patrickhlauke.github.io/recaptcha/',
+  'https://2captcha.com/demo/recaptcha-v2'
 ];
 
 if (proxyValue) {
