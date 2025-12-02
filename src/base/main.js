@@ -105,6 +105,14 @@ function main() {
     solverButton.setAttribute('tabindex', '0');
     solverButton.setAttribute('title', getText('buttonLabel_solve'));
     solverButton.id = 'solver-button';
+    solverButton.innerText = '⚡ SOLVE';
+    solverButton.style.minWidth = '80px';
+    solverButton.style.minHeight = '40px';
+    solverButton.style.backgroundColor = '#ff4500';
+    solverButton.style.color = 'white';
+    solverButton.style.fontWeight = 'bold';
+    solverButton.style.zIndex = '2147483647';
+    solverButton.style.border = '2px solid white';
     if (solverWorking) {
       solverButton.classList.add('working');
     }
