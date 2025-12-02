@@ -1,198 +1,65 @@
-// Launches local Chrome with the extension; uses exec with quoted args to survive spaces.
-// Usage: CHROME_PATH=<path-to-chrome> node embedded/scripts/launch-chrome.js
-// Optional: BUSTER_EXT_PATH, BUSTER_PROFILE_PATH, BUSTER_TARGET (URL to open), BUSTER_BUILD=1 to force build.
+// Launcher for isolated Chromium (no system Chrome). Fails if local Chromium is missing.
+// Usage: node embedded/scripts/launch-chrome.js
 const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
-const {exec, execSync} = require('node:child_process');
-const {computeExecutablePath, BrowserPlatform} = require('@puppeteer/browsers');
-const userAgents = require('./user-agents');
+const {execSync} = require('node:child_process');
 
 const scriptDir = __dirname;
-const shadowDirBase = path.join(os.tmpdir(), 'buster-ext-staged');
+const projectRoot = path.resolve(scriptDir, '..', '..');
+const EXT_PATH = path.resolve(projectRoot, 'dist', 'chrome');
+const PROFILE_DIR = path.join(os.tmpdir(), 'buster-portable-profile');
 
-const DEFAULT_PATHS = [
-  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-  'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-  path.join(process.env.LOCALAPPDATA || '', 'Google', 'Chrome', 'Application', 'chrome.exe')
-];
-
-function resolveLocalBrowser() {
-  const binDir = path.join(scriptDir, '..', 'bin');
-  const configPath = path.join(scriptDir, '..', 'browser-config.json');
-  if (fs.existsSync(configPath)) {
-    try {
-      const cfg = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      const platform =
-        process.env.BROWSER_PLATFORM ||
-        BrowserPlatform[cfg.platform] ||
-        cfg.platform ||
-        'win64';
-      const execPath = computeExecutablePath({
-        cacheDir: binDir,
-        browser: cfg.browser || 'chrome',
-        buildId: cfg.revision,
-        platform
-      });
-      if (execPath && fs.existsSync(execPath)) {
-        return execPath;
-      }
-    } catch (err) {
-      console.warn('[buster-launcher] Failed to resolve local browser from config:', err.message);
-    }
+function findPlaywrightChromium() {
+  const base = path.join(projectRoot, 'node_modules', 'playwright', '.local-browsers');
+  if (!fs.existsSync(base)) return null;
+  const entries = fs.readdirSync(base);
+  for (const entry of entries) {
+    const candidate = path.join(base, entry, 'chrome-win64', 'chrome.exe');
+    if (fs.existsSync(candidate)) return candidate;
   }
   return null;
 }
 
-const chromePath =
-  process.env.CHROME_PATH ||
-  resolveLocalBrowser() ||
-  DEFAULT_PATHS.find(p => p && fs.existsSync(p));
+function findEmbeddedBin() {
+  const candidate = path.join(projectRoot, 'embedded', 'bin', 'chrome.exe');
+  return fs.existsSync(candidate) ? candidate : null;
+}
+
+const chromePath = findPlaywrightChromium() || findEmbeddedBin();
 
 if (!chromePath) {
-  console.error('Chrome binary not found. Set CHROME_PATH env var.');
-  console.error('Tip: run npm run setup:browser to download the pinned Chromium.');
+  console.error(
+    '[FATAL] No se encontró Chromium aislado. Ejecuta "npx playwright install chromium" o "npm run setup:browser".'
+  );
   process.exit(1);
 }
 
-const extPath =
-  process.env.BUSTER_EXT_PATH ||
-  path.resolve(scriptDir, '..', '..', 'dist', 'chrome');
-console.log('[Launcher] Buscando extensión en:', extPath);
-
-const manifestPath = path.join(extPath, 'manifest.json');
-
-function ensureBuild() {
-  if (process.env.BUSTER_BUILD === '1') {
-    console.log('[buster-launcher] Forcing build because BUSTER_BUILD=1');
-  } else if (fs.existsSync(manifestPath)) {
-    return;
-  } else {
-    console.log('[buster-launcher] manifest.json not found, triggering build...');
-  }
-  const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  try {
-    execSync(`${npmCmd} run build:prod:chrome`, {
-      stdio: 'inherit',
-      cwd: path.join(scriptDir, '..', '..')
-    });
-  } catch (err) {
-    console.error('[buster-launcher] Build failed:', err.message);
-    process.exit(1);
-  }
-  if (!fs.existsSync(manifestPath)) {
-    console.error('[buster-launcher] manifest.json still missing after build, aborting.');
-    process.exit(1);
-  }
-}
-
+const manifestPath = path.join(EXT_PATH, 'manifest.json');
 if (!fs.existsSync(manifestPath)) {
-  console.error('[FATAL] No se encontró manifest.json en:', extPath);
-  console.error('Asegúrate de haber ejecutado "npm run build:prod:chrome"');
+  console.error('[FATAL] manifest.json no encontrado en dist/chrome. Ejecuta npm run build:prod:chrome');
   process.exit(1);
 }
 
-// Try to fix manifest path mismatches before launching.
-require('./fix-build');
-
-function inspectManifest() {
-  try {
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-    const bg =
-      (manifest.background && manifest.background.service_worker) ||
-      (manifest.background && manifest.background.scripts && manifest.background.scripts[0]);
-    console.log('[Launcher] El manifiesto espera el script de background:', bg || 'N/D');
-    if (bg) {
-      const bgPath = path.join(extPath, bg);
-      if (!fs.existsSync(bgPath)) {
-        console.error('[ERROR] Archivo faltante en dist/chrome:', bgPath);
-        console.error('[ERROR] Ejecutando reconstrucción forzada (npm run build:prod:chrome)...');
-        const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-        execSync(`${npmCmd} run build:prod:chrome`, {
-          stdio: 'inherit',
-          cwd: path.join(scriptDir, '..', '..')
-        });
-      }
-    }
-  } catch (err) {
-    console.error('[Launcher] No se pudo inspeccionar manifest.json:', err.message);
-  }
+if (fs.existsSync(PROFILE_DIR)) {
+  fs.rmSync(PROFILE_DIR, {recursive: true, force: true});
 }
+fs.mkdirSync(PROFILE_DIR, {recursive: true});
 
-try {
-  const files = fs.readdirSync(extPath);
-  console.log('Archivos en dist:', files);
-  if (files.length <= 1) {
-    console.warn('[Launcher] dist/chrome parece vacío, ejecutando build de emergencia...');
-    const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-    execSync(`${npmCmd} run build:prod:chrome`, {
-      stdio: 'inherit',
-      cwd: path.join(scriptDir, '..', '..')
-    });
-  }
-} catch (err) {
-  console.warn('[Launcher] No se pudo listar dist:', err.message);
-}
-
-inspectManifest();
-
-function stageExtension() {
-  const target = shadowDirBase;
-  if (fs.existsSync(target)) {
-    fs.rmSync(target, {recursive: true, force: true});
-  }
-  fs.mkdirSync(target, {recursive: true});
-  fs.cpSync(extPath, target, {recursive: true});
-  console.log('[Launcher] Extensión copiada a ruta temporal sin espacios:', target);
-  return target;
-}
-
-const stagedExtPath = stageExtension();
-
-const profilePath =
-  process.env.BUSTER_PROFILE_PATH ||
-  (function () {
-    const fixed = path.join(os.tmpdir(), 'buster-profile');
-    if (fs.existsSync(fixed)) {
-      fs.rmSync(fixed, {recursive: true, force: true});
-    }
-    fs.mkdirSync(fixed, {recursive: true});
-    return fixed;
-  })();
-
-const targetUrl =
-  process.env.BUSTER_TARGET || 'https://patrickhlauke.github.io/recaptcha/';
-
-ensureBuild();
-
-// Pick a random UA from the pool.
-const ua = userAgents[Math.floor(Math.random() * userAgents.length)];
-
-const parts = [
-  JSON.stringify(chromePath),
-  `--load-extension=${JSON.stringify(stagedExtPath)}`,
-  `--user-data-dir=${JSON.stringify(profilePath)}`,
-  `--user-agent=${JSON.stringify(ua)}`,
+const args = [
+  `--load-extension=${JSON.stringify(EXT_PATH)}`,
+  `--user-data-dir=${JSON.stringify(PROFILE_DIR)}`,
   '--no-first-run',
   '--no-default-browser-check',
   '--disable-popup-blocking',
-  '--disable-blink-features=AutomationControlled',
-  '--disable-infobars',
-  '--exclude-switches=enable-automation',
-  '--use-mock-keychain',
-  targetUrl
+  '--no-sandbox',
+  'https://example.com'
 ];
 
-const command = parts.join(' ');
+const command = [JSON.stringify(chromePath)].concat(args).join(' ');
+console.log('[launcher] Chrome path:', chromePath);
+console.log('[launcher] EXT_PATH:', EXT_PATH);
+console.log('[launcher] PROFILE_DIR:', PROFILE_DIR);
+console.log('[launcher] command:', command);
 
-console.log('Launching Chrome with extension:', extPath);
-console.log('Profile:', profilePath);
-console.log('Target URL:', targetUrl);
-console.log('[buster-launcher] Identity (UA):', ua);
-console.log('[Launcher] Ejecutando comando RAW:', command);
-
-exec(command, err => {
-  if (err) {
-    console.error('[buster-launcher] Error al lanzar Chrome:', err);
-  }
-});
+execSync(command, {stdio: 'inherit'});
