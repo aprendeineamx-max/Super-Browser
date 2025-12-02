@@ -69,49 +69,36 @@ function main() {
 
   // Inyección directa y persistente de un botón visible.
   function forceInject() {
-    if (document.getElementById('buster-force-btn')) return;
+    // Diagnóstico visual de contexto
+    if (window === window.top) {
+      document.documentElement.style.border = '5px solid blue';
+    } else {
+      document.documentElement.style.border = '5px solid red';
+    }
+
+    const oldBtn = document.getElementById('buster-nuclear-btn');
+    if (oldBtn) {
+      oldBtn.remove();
+    }
 
     const btn = document.createElement('div');
-    btn.id = 'buster-force-btn';
-    btn.innerText = '⚡ SOLVE';
+    btn.id = 'buster-nuclear-btn';
+    btn.innerText = window === window.top ? 'TOP' : 'IFRAME';
 
     Object.assign(btn.style, {
       position: 'fixed',
-      bottom: '10px',
-      right: '10px',
+      top: '0',
+      left: window === window.top ? '0' : '50%',
       zIndex: '2147483647',
-      backgroundColor: '#ff4500',
+      backgroundColor: window === window.top ? 'blue' : 'red',
       color: 'white',
-      padding: '10px 20px',
-      border: '2px solid white',
-      borderRadius: '5px',
+      fontSize: '20px',
+      padding: '10px',
       fontWeight: 'bold',
-      cursor: 'pointer',
-      boxShadow: '0 0 10px rgba(0,0,0,0.5)',
-      fontSize: '14px',
-      lineHeight: '1.2',
-      textAlign: 'center'
+      pointerEvents: 'none'
     });
 
-    if (
-      window.location.href.includes('google.com/recaptcha') ||
-      window.location.href.includes('recaptcha.net/recaptcha')
-    ) {
-      btn.innerText = '🤖 ESTOY DENTRO';
-      btn.style.backgroundColor = '#00C853';
-      btn.style.top = '0px';
-      btn.style.left = '0px';
-      btn.style.bottom = 'auto';
-      btn.style.right = 'auto';
-    }
-
-    btn.addEventListener('click', e => {
-      e.preventDefault();
-      e.stopPropagation();
-      alert('¡Click detectado dentro del iframe!');
-    });
-
-    (document.body || document.documentElement).appendChild(btn);
+    (document.documentElement || document.body).appendChild(btn);
   }
 
   function ensureSolverButton() {
