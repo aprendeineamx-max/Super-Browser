@@ -9,6 +9,7 @@ const scriptDir = __dirname;
 const projectRoot = path.resolve(scriptDir, '..', '..');
 const EXT_PATH = path.resolve(projectRoot, 'dist', 'chrome');
 const PROFILE_DIR = path.join(os.tmpdir(), 'buster-portable-profile');
+const STAGED_EXT_DIR = path.join(os.tmpdir(), 'buster-ext-staged');
 
 function findPlaywrightChromium() {
   const base = path.join(projectRoot, 'node_modules', 'playwright', '.local-browsers');
@@ -41,13 +42,26 @@ if (!fs.existsSync(manifestPath)) {
   process.exit(1);
 }
 
+function stageExtension() {
+  if (fs.existsSync(STAGED_EXT_DIR)) {
+    fs.rmSync(STAGED_EXT_DIR, {recursive: true, force: true});
+  }
+  fs.mkdirSync(STAGED_EXT_DIR, {recursive: true});
+  fs.cpSync(EXT_PATH, STAGED_EXT_DIR, {recursive: true});
+  console.log('[launcher] Extensión copiada a staging:', STAGED_EXT_DIR);
+  return STAGED_EXT_DIR;
+}
+
 if (fs.existsSync(PROFILE_DIR)) {
   fs.rmSync(PROFILE_DIR, {recursive: true, force: true});
 }
 fs.mkdirSync(PROFILE_DIR, {recursive: true});
 
+const stagedExt = stageExtension();
+
 const args = [
-  `--load-extension=${JSON.stringify(EXT_PATH)}`,
+  `--disable-extensions-except=${JSON.stringify(stagedExt)}`,
+  `--load-extension=${JSON.stringify(stagedExt)}`,
   `--user-data-dir=${JSON.stringify(PROFILE_DIR)}`,
   '--no-first-run',
   '--no-default-browser-check',
