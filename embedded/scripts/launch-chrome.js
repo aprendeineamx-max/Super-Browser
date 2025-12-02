@@ -53,10 +53,16 @@ function stageExtension() {
   return STAGED_EXT_DIR;
 }
 
-if (fs.existsSync(PROFILE_DIR)) {
-  fs.rmSync(PROFILE_DIR, {recursive: true, force: true});
+let currentProfileDir = PROFILE_DIR;
+try {
+  if (fs.existsSync(PROFILE_DIR)) {
+    fs.rmSync(PROFILE_DIR, {recursive: true, force: true});
+  }
+} catch (err) {
+  console.warn('[launcher] Perfil bloqueado, usando ruta temporal única...', err.message);
+  currentProfileDir = path.join(os.tmpdir(), `buster-profile-${Date.now()}`);
 }
-fs.mkdirSync(PROFILE_DIR, {recursive: true});
+fs.mkdirSync(currentProfileDir, {recursive: true});
 
 const stagedExt = stageExtension();
 
@@ -80,7 +86,7 @@ if (fs.existsSync(PROXY_FILE)) {
 const args = [
   `--disable-extensions-except=${JSON.stringify(stagedExt)}`,
   `--load-extension=${JSON.stringify(stagedExt)}`,
-  `--user-data-dir=${JSON.stringify(PROFILE_DIR)}`,
+  `--user-data-dir=${JSON.stringify(currentProfileDir)}`,
   '--no-first-run',
   '--no-default-browser-check',
   '--disable-popup-blocking',
