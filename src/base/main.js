@@ -1,3 +1,11 @@
+window.addEventListener('error', function (e) {
+  const errDiv = document.createElement('div');
+  errDiv.style.cssText =
+    'position:fixed; top:0; left:0; width:100%; background:red; color:white; z-index:99999999; padding:20px; font-size:20px; font-weight:bold;';
+  errDiv.innerText = 'CRASH BUSTER: ' + e.message;
+  (document.body || document.documentElement).appendChild(errDiv);
+});
+
 import storage from 'storage/storage';
 import {meanSleep, pingClientApp} from 'utils/app';
 import {
@@ -11,12 +19,13 @@ import {targetEnv, clientAppVersion} from 'utils/config';
 import {humanMouse} from 'utils/human-mouse';
 
 function main() {
-  // Script may be injected multiple times.
-  if (self.baseModule) {
-    return;
-  } else {
-    self.baseModule = true;
-  }
+  try {
+    // Script may be injected multiple times.
+    if (self.baseModule) {
+      return;
+    } else {
+      self.baseModule = true;
+    }
 
   console.log('🚀 [CONTEXTO] URL:', window.location.href);
   console.log('🖼️ [CONTEXTO] ¿Es Iframe?:', window !== window.top);
@@ -583,6 +592,14 @@ function main() {
     init();
     addStorageListener();
   });
+  } catch (e) {
+    const errDiv = document.createElement('div');
+    errDiv.style.cssText =
+      'position:fixed; top:0; left:0; width:100%; background:red; color:white; z-index:99999999; padding:20px; font-size:20px; font-weight:bold;';
+    errDiv.innerText = 'CRASH BUSTER: ' + e.message;
+    (document.body || document.documentElement).appendChild(errDiv);
+    console.error('BUSTER MAIN CRASH:', e);
+  }
 }
 
 main();

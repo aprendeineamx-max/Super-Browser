@@ -133,7 +133,7 @@ const args = [
   '--no-first-run',
   '--no-default-browser-check',
   '--disable-popup-blocking',
-  '--no-sandbox',
+  '--test-type',
   'https://patrickhlauke.github.io/recaptcha/',
   'https://2captcha.com/demo/recaptcha-v2'
 ];
