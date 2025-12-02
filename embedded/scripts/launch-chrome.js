@@ -129,6 +129,7 @@ const args = [
   `--disable-extensions-except=${JSON.stringify(stagedExt)}`,
   `--load-extension=${JSON.stringify(stagedExt)}`,
   `--user-data-dir=${JSON.stringify(currentProfileDir)}`,
+  '--start-maximized',
   '--no-first-run',
   '--no-default-browser-check',
   '--disable-popup-blocking',

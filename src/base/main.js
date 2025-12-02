@@ -18,12 +18,11 @@ function main() {
     self.baseModule = true;
   }
 
-  console.log('⚡ [BUSTER] INICIO DE SCRIPT (v.Debug)');
-  console.log('🚀 [BUSTER DEBUG] Content script inyectado en:', window.location.href);
-
+  console.log('[BUSTER] INICIO DE SCRIPT (debug)');
+  console.log('[BUSTER] Content script inyectado en: ' + window.location.href);
   const markTarget = function () {
     if (window.location.href.includes('recaptcha') || window.location.href.includes('api2')) {
-      console.log('🎯 [BUSTER] TARGET DETECTED!');
+      console.log('[BUSTER] TARGET DETECTED!');
       if (document && document.body) {
         document.body.style.border = '5px solid #ff4500';
         document.body.style.boxSizing = 'border-box';
@@ -33,7 +32,6 @@ function main() {
   };
   markTarget();
   setInterval(markTarget, 1000);
-
   let solverWorking = false;
   let solverButton = null;
   let autoResolveEnabled = false;
@@ -58,8 +56,10 @@ function main() {
     });
   }
 
-  function syncUI() {
-    console.log('[BUSTER DEBUG] Buscando contenedor de reCAPTCHA...');
+  function ensureSolverButton() {
+    console.log('[BUSTER DEBUG] Tick ensureSolverButton');
+
+    // Mostrar controles de reset cuando Google bloquea el captcha.
     if (isBlocked()) {
       if (!document.querySelector('.solver-controls')) {
         const div = document.createElement('div');
@@ -70,49 +70,85 @@ function main() {
         button.setAttribute('tabindex', '0');
         button.setAttribute('title', getText('buttonLabel_reset'));
         button.id = 'reset-button';
-
         button.addEventListener('click', resetCaptcha);
 
+        const footer = document.querySelector('.rc-footer') || document.body;
+        footer.appendChild(div);
         div.appendChild(button);
-        document.querySelector('.rc-footer').appendChild(div);
+      }
+      return;
+    }
+
+    // Si ya existe y sigue presente, solo dispara auto-resolver si toca.
+    if (solverButton && document.contains(solverButton)) {
+      if (autoResolveEnabled && !solverWorking && !isAutoSolving) {
+        const audioBtn = document.querySelector('#recaptcha-audio-button');
+        if (audioBtn) {
+          triggerAutoSolve(audioBtn);
+        }
       }
       return;
     }
 
     const helpButton = document.querySelector('#recaptcha-help-button');
-    if (helpButton) {
+    const helpButtonHolder = document.querySelector('.help-button-holder');
+    if (helpButton && helpButtonHolder) {
       console.log('[BUSTER DEBUG] Widget detectado:', helpButton);
       helpButton.remove();
-
-      const helpButtonHolder = document.querySelector('.help-button-holder');
       helpButtonHolder.tabIndex = document.querySelector('audio#audio-source')
         ? 0
         : 2;
+    }
 
+    const styleUrl = browser.runtime.getURL('/src/base/solver-button.css');
+    solverButton = document.createElement('button');
+    solverButton.setAttribute('tabindex', '0');
+    solverButton.setAttribute('title', getText('buttonLabel_solve'));
+    solverButton.id = 'solver-button';
+    if (solverWorking) {
+      solverButton.classList.add('working');
+    }
+    solverButton.addEventListener('click', solveChallenge);
+
+    let container = document.querySelector('.rc-footer');
+
+    if (helpButtonHolder) {
+      // Camino original con shadow DOM en el holder.
       const shadow = helpButtonHolder.attachShadow({
         mode: 'closed',
         delegatesFocus: true
       });
-
       const link = document.createElement('link');
       link.setAttribute('rel', 'stylesheet');
-      link.setAttribute(
-        'href',
-        browser.runtime.getURL('/src/base/solver-button.css')
-      );
+      link.setAttribute('href', styleUrl);
       shadow.appendChild(link);
-
-      solverButton = document.createElement('button');
-      solverButton.setAttribute('tabindex', '0');
-      solverButton.setAttribute('title', getText('buttonLabel_solve'));
-      solverButton.id = 'solver-button';
-      if (solverWorking) {
-        solverButton.classList.add('working');
-      }
-
-      solverButton.addEventListener('click', solveChallenge);
-
       shadow.appendChild(solverButton);
+    } else if (container) {
+      const link = document.createElement('link');
+      link.setAttribute('rel', 'stylesheet');
+      link.setAttribute('href', styleUrl);
+      document.head.appendChild(link);
+      container.appendChild(solverButton);
+    } else {
+      // Fallback flotante
+      console.log('[BUSTER] Footer no encontrado, usando modo flotante');
+      container = document.body;
+      const link = document.createElement('link');
+      link.setAttribute('rel', 'stylesheet');
+      link.setAttribute('href', styleUrl);
+      document.head.appendChild(link);
+
+      solverButton.style.position = 'fixed';
+      solverButton.style.bottom = '5px';
+      solverButton.style.right = '5px';
+      solverButton.style.zIndex = '2147483647';
+      solverButton.style.padding = '8px 10px';
+      solverButton.style.background = '#ff7a00';
+      solverButton.style.border = 'none';
+      solverButton.style.borderRadius = '6px';
+      solverButton.style.cursor = 'pointer';
+      solverButton.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+      container.appendChild(solverButton);
     }
 
     if (autoResolveEnabled && !solverWorking && !isAutoSolving) {
@@ -562,13 +598,14 @@ function main() {
   }
 
   function init() {
-    const observer = new MutationObserver(syncUI);
+    const observer = new MutationObserver(ensureSolverButton);
     observer.observe(document, {
       childList: true,
       subtree: true
     });
 
-    syncUI();
+    ensureSolverButton();
+    setInterval(ensureSolverButton, 500);
   }
 
   async function loadSettings() {
@@ -599,3 +636,10 @@ function main() {
 }
 
 main();
+
+
+
+
+
+
+
