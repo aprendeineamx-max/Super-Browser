@@ -168,6 +168,17 @@
         controls.appendChild(btn);
         placed = true;
       }
+
+      // Si no hay controles visibles (p.ej. solo grid), insertamos en la esquina superior del iframe
+      if (!placed && document.body) {
+        btn.style.position = 'absolute';
+        btn.style.top = '6px';
+        btn.style.left = '6px';
+        btn.style.right = 'auto';
+        btn.style.bottom = 'auto';
+        document.body.appendChild(btn);
+        placed = true;
+      }
     }
 
     if (!placed) {

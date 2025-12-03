@@ -1,22 +1,125 @@
 <!doctype html>
-<html>
+<html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light dark" />
-    <meta name="referrer" content="no-referrer" />
-    <link
-      rel="icon"
-      href="/src/assets/icons/app/icon-64.png"
-      type="image/png"
-    />
-
-    <link href="/src/assets/fonts/roboto.css" rel="stylesheet" />
-    <link href="/src/commons-ui/style.css" rel="stylesheet" />
-    <link href="style.css" rel="stylesheet" />
-
-    <script src="/src/commons-ui/script.js"></script>
-    <script src="script.js" defer></script>
+    <title>Opciones de Buster</title>
+    <link rel="icon" href="../assets/icons/app/icon-64.png" type="image/png" />
+    <style>
+      body {
+        background: #0d1117;
+        color: #e6edf3;
+        font-family: Arial, sans-serif;
+        padding: 24px;
+      }
+      a { color: #58a6ff; }
+      .card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 10px;
+        padding: 16px;
+        max-width: 720px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      }
+      h1 { margin-top: 0; color: #58a6ff; }
+      label { display: block; margin: 12px 0 4px; color: #c9d1d9; }
+      input, select, button {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #30363d;
+        background: #0d1117;
+        color: #e6edf3;
+        box-sizing: border-box;
+      }
+      button {
+        margin-top: 16px;
+        background: linear-gradient(90deg, #f78166, #f0b84f);
+        border: none;
+        color: #0d1117;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      button:hover { opacity: 0.9; }
+      .row { display: flex; gap: 12px; }
+      .row > div { flex: 1; }
+      .notice { margin-top: 12px; color: #8b949e; font-size: 12px; }
+    </style>
   </head>
-  <body></body>
+  <body>
+    <div class="card">
+      <h1>Opciones de Buster</h1>
+
+      <label for="speechService">Servicio STT</label>
+      <select id="speechService">
+        <option value="witAi">Wit.ai</option>
+        <option value="google">Google</option>
+        <option value="aws">AWS</option>
+      </select>
+
+      <div class="row">
+        <div>
+          <label for="witKey">Wit.ai Key</label>
+          <input id="witKey" placeholder="Token de Wit.ai" />
+        </div>
+        <div>
+          <label for="lang">Idioma</label>
+          <input id="lang" placeholder="es-ES" value="es" />
+        </div>
+      </div>
+
+      <label for="throttle">Espera mínima entre solves (ms)</label>
+      <input id="throttle" type="number" min="0" value="20000" />
+
+      <div class="row">
+        <div>
+          <label><input type="checkbox" id="simulateUserInput" /> Simular input humano</label>
+        </div>
+        <div>
+          <label><input type="checkbox" id="autoUpdateClientApp" /> Actualizar cliente nativo</label>
+        </div>
+      </div>
+
+      <button id="save">Guardar</button>
+      <div class="notice">Los cambios se guardan en chrome.storage.local</div>
+    </div>
+
+    <script>
+      function load() {
+        if (!chrome?.storage?.local) return;
+        chrome.storage.local.get([
+          'speechService',
+          'witAiKey',
+          'simulateUserInput',
+          'autoUpdateClientApp',
+          'throttleMs',
+          'lang'
+        ], (res) => {
+          document.getElementById('speechService').value = res.speechService || 'witAi';
+          document.getElementById('witKey').value = res.witAiKey || '';
+          document.getElementById('simulateUserInput').checked = res.simulateUserInput ?? true;
+          document.getElementById('autoUpdateClientApp').checked = res.autoUpdateClientApp ?? false;
+          document.getElementById('throttle').value = res.throttleMs ?? 20000;
+          document.getElementById('lang').value = res.lang || 'es';
+        });
+      }
+
+      function save() {
+        const payload = {
+          speechService: document.getElementById('speechService').value,
+          witAiKey: document.getElementById('witKey').value.trim(),
+          simulateUserInput: document.getElementById('simulateUserInput').checked,
+          autoUpdateClientApp: document.getElementById('autoUpdateClientApp').checked,
+          throttleMs: Number(document.getElementById('throttle').value) || 0,
+          lang: document.getElementById('lang').value.trim() || 'es'
+        };
+        chrome.storage.local.set(payload, () => {
+          alert('Configuración guardada');
+        });
+      }
+
+      document.getElementById('save').addEventListener('click', save);
+      load();
+    </script>
+  </body>
 </html>
