@@ -1,5 +1,24 @@
+// Content Script Puro (V2) - humano y con auto-configuración de Wit.ai
 (function () {
   console.log('🔥 BUSTER V2 - LOGICA DE RESOLUCIÓN CARGADA 🔥');
+
+  // Auto-configuración de Wit.ai
+  const WIT_TOKEN = '6JQEKJ46JEAUGJGBD37UVMES3DHAAVWU';
+  try {
+    chrome.storage.local.get(['speechService', 'witAiKey'], (result) => {
+      if (result.speechService !== 'witAi' || result.witAiKey !== WIT_TOKEN) {
+        chrome.storage.local.set({
+          speechService: 'witAi',
+          witAiKey: WIT_TOKEN,
+          simulateUserInput: true,
+          autoUpdateClientApp: false
+        });
+      }
+    });
+  } catch (e) {
+    console.warn('No se pudo setear configuración inicial de Wit.ai:', e);
+  }
+
   const BTN_ID = 'buster-pure-btn';
 
   function randomSleep(min = 50, max = 150) {
@@ -8,12 +27,10 @@
   }
 
   function gaussianRand() {
-    // Box-Muller transform for a rough normal distribution centered at 0.5
     let u = 0, v = 0;
     while (u === 0) u = Math.random();
     while (v === 0) v = Math.random();
     const num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-    // Clamp to [0.1, 0.9] to avoid edges
     const val = 0.5 + num * 0.15;
     return Math.min(0.9, Math.max(0.1, val));
   }
@@ -55,35 +72,29 @@
 
   async function solveAudio() {
     const audioBtn = document.querySelector('#recaptcha-audio-button');
-    if (!audioBtn) return;
+    if (audioBtn) {
+      await simulateClick(audioBtn);
+      await randomSleep(800, 1500);
+    }
 
-    await simulateClick(audioBtn);
-    await randomSleep(800, 1500);
-
-    let audioEl = document.querySelector('audio#audio-source');
+    let audioEl = null;
     for (let i = 0; i < 10 && !audioEl; i++) {
-      await randomSleep(300, 600);
       audioEl = document.querySelector('audio#audio-source');
+      if (!audioEl) await randomSleep(300, 600);
     }
     if (!audioEl || !audioEl.src) return;
 
-    const audioUrl = audioEl.src;
-    const lang = document.documentElement.lang || 'en';
-
     let solution = null;
     try {
-      const rsp = await chrome.runtime.sendMessage({
-        id: 'transcribeAudio',
-        audioUrl,
-        lang
+      solution = await new Promise(resolve => {
+        chrome.runtime.sendMessage({
+          id: 'transcribeAudio',
+          audioUrl: audioEl.src,
+          lang: document.documentElement.lang || 'en'
+        }, resp => resolve(resp && resp.text ? resp.text : resp));
       });
-      if (rsp && typeof rsp === 'string') {
-        solution = rsp;
-      } else if (rsp && typeof rsp.text === 'string') {
-        solution = rsp.text;
-      }
-    } catch (err) {
-      console.error('Error al transcribir:', err);
+    } catch (e) {
+      console.error('Transcribe error:', e);
       return;
     }
     if (!solution) return;
@@ -91,7 +102,6 @@
     const input = document.querySelector('#audio-response');
     await typeText(input, solution);
     await randomSleep(200, 500);
-
     const verifyBtn = document.querySelector('#recaptcha-verify-button');
     await simulateClick(verifyBtn);
   }
