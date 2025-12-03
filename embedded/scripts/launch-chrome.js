@@ -203,15 +203,6 @@ const targetJs = path.join(STAGED_EXT_DIR, 'src', 'base', 'script.js');
 fs.writeFileSync(targetJs, v3ScriptContent);
 console.log('[Launcher] Content Script V3 inyectado (Size:', v3ScriptContent.length, ')');
 
-// Copiar el script puro (con humanización) para garantizar la versión más reciente
-try {
-  const sourcePure = path.join(projectRoot, 'src', 'base', 'script.pure.js');
-  fs.copyFileSync(sourcePure, targetJs);
-  console.log('[Launcher] VERIFICACIÓN: script.pure.js copiado. Tamaño:', fs.statSync(targetJs).size, 'bytes');
-} catch (err) {
-  console.warn('[Launcher] No se pudo copiar script.pure.js:', err.message);
-}
-
 // --- 6. Perfil ---
 let currentProfileDir = PROFILE_DIR;
 try {
