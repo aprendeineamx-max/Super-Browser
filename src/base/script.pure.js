@@ -1,4 +1,5 @@
 (function () {
+  console.log('🔥 BUSTER V2 - LOGICA DE RESOLUCIÓN CARGADA 🔥');
   const BTN_ID = 'buster-pure-btn';
 
   function randomSleep(min = 50, max = 150) {
@@ -6,11 +7,22 @@
     return new Promise(res => setTimeout(res, t));
   }
 
+  function gaussianRand() {
+    // Box-Muller transform for a rough normal distribution centered at 0.5
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    const num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    // Clamp to [0.1, 0.9] to avoid edges
+    const val = 0.5 + num * 0.15;
+    return Math.min(0.9, Math.max(0.1, val));
+  }
+
   async function simulateClick(el) {
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    const x = rect.left + Math.random() * Math.max(10, rect.width * 0.3);
-    const y = rect.top + Math.random() * Math.max(10, rect.height * 0.3);
+    const x = rect.left + rect.width * gaussianRand();
+    const y = rect.top + rect.height * gaussianRand();
     const opts = {
       bubbles: true,
       cancelable: true,

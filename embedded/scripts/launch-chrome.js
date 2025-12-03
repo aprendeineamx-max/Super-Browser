@@ -184,7 +184,8 @@ try {
   const sourcePure = path.join(projectRoot, 'src', 'base', 'script.pure.js');
   const targetScript = path.join(stagedExt, 'src', 'base', 'script.js');
   fs.copyFileSync(sourcePure, targetScript);
-  console.log('[Launcher] script.js reemplazado con script.pure.js');
+  const size = fs.statSync(targetScript).size;
+  console.log('[Launcher] VERIFICACIÓN: script.pure.js copiado. Tamaño:', size, 'bytes');
 } catch (err) {
   console.warn('[Launcher] No se pudo copiar script.pure.js:', err.message);
 }
