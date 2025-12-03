@@ -179,27 +179,14 @@ try {
   process.exit(1);
 }
 
-// Sobrescribir script.js con código puro para aislar problemas de bundling.
+// Sustituir el content script con la versión pura (JS plano) para asegurar inyección.
 try {
-  const pwnedScriptPath = path.join(stagedExt, 'src', 'base', 'script.js');
-  const pwnedCode = `
-console.log("🔥 SCRIPT PURO INYECTADO 🔥");
-(function() {
-  var d = document.createElement('div');
-  d.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:20px; background:purple; z-index:99999999; color:white; text-align:center; font-weight:bold;';
-  d.innerText = 'JS PURO FUNCIONANDO EN: ' + window.location.host;
-  (document.body || document.documentElement).appendChild(d);
-
-  var btn = document.createElement('button');
-  btn.innerText = '⚡ TEST';
-  btn.style.cssText = 'position:fixed; bottom:10px; right:10px; background:orange; z-index:99999999; padding:20px;';
-  document.body.appendChild(btn);
-})();
-`;
-  fs.writeFileSync(pwnedScriptPath, pwnedCode, 'utf-8');
-  console.log('[Launcher] Archivo script.js SOBRESCRITO con código puro.');
+  const sourcePure = path.join(projectRoot, 'src', 'base', 'script.pure.js');
+  const targetScript = path.join(stagedExt, 'src', 'base', 'script.js');
+  fs.copyFileSync(sourcePure, targetScript);
+  console.log('[Launcher] script.js reemplazado con script.pure.js');
 } catch (err) {
-  console.warn('[Launcher] No se pudo sobrescribir script.js para prueba de vida:', err.message);
+  console.warn('[Launcher] No se pudo copiar script.pure.js:', err.message);
 }
 
 const command = [JSON.stringify(chromePath)].concat(args).join(' ');
