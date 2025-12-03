@@ -127,35 +127,27 @@
     const old = document.getElementById(BTN_ID);
     if (old) old.remove();
 
+    // Preferimos inyectar inline junto a los controles nativos si estamos en el iframe del reto
+    const isRecaptchaFrame =
+      window.location.href.includes('google.com/recaptcha') ||
+      window.location.href.includes('recaptcha.net/recaptcha');
+
     const btn = document.createElement('button');
     btn.id = BTN_ID;
-    btn.innerText = '⚡ SOLVE';
+    btn.innerText = isRecaptchaFrame ? '⚡ SOLVE (IFRAME)' : '⚡ SOLVE';
     Object.assign(btn.style, {
-      position: 'fixed',
-      bottom: '10px',
-      right: '10px',
-      zIndex: '2147483647',
-      backgroundColor: '#ff4500',
+      backgroundColor: isRecaptchaFrame ? '#00C853' : '#ff4500',
       color: 'white',
-      padding: '10px 16px',
+      padding: '8px 10px',
       border: '2px solid white',
       borderRadius: '6px',
       fontWeight: 'bold',
       cursor: 'pointer',
-      boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
+      boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+      fontSize: '13px',
+      lineHeight: '1.2',
+      zIndex: '2147483647'
     });
-
-    if (
-      window.location.href.includes('google.com/recaptcha') ||
-      window.location.href.includes('recaptcha.net/recaptcha')
-    ) {
-      btn.innerText = '⚡ SOLVE (IFRAME)';
-      btn.style.backgroundColor = '#00C853';
-      btn.style.top = '0';
-      btn.style.left = '0';
-      btn.style.bottom = 'auto';
-      btn.style.right = 'auto';
-    }
 
     btn.addEventListener('click', ev => {
       ev.preventDefault();
@@ -163,7 +155,30 @@
       solveAudio();
     });
 
-    (document.body || document.documentElement).appendChild(btn);
+    let placed = false;
+    if (isRecaptchaFrame) {
+      const audioBtn = document.querySelector('#recaptcha-audio-button');
+      const controls =
+        document.querySelector('.rc-controls') ||
+        document.querySelector('.primary-controls') ||
+        (audioBtn && audioBtn.parentElement);
+      if (controls) {
+        btn.style.position = 'relative';
+        btn.style.marginLeft = '8px';
+        controls.appendChild(btn);
+        placed = true;
+      }
+    }
+
+    if (!placed) {
+      // Fallback flotante
+      Object.assign(btn.style, {
+        position: 'fixed',
+        bottom: '10px',
+        right: '10px'
+      });
+      (document.body || document.documentElement).appendChild(btn);
+    }
   }
 
   setInterval(injectButton, 500);
